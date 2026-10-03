@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "com.bolorigpro.app",
+        "sha256_cert_fingerprints": ["71:A4:66:AA:6B:94:F2:E6:46:BD:13:4B:BC:1A:B0:CD:CF:8A:07:A7:24:7D:D6:8B:44:5D:72:6A:51:89:A3:8E"]
+      }
+    }]
