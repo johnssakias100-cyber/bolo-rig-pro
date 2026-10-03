@@ -1,5 +1,5 @@
 // BOLO RIG PRO — service worker (λειτουργία χωρίς internet)
-const CACHE = "bolorigpro-1.0.2";
+const CACHE = "bolorigpro-1.0.3";
 const SHELL = ["./", "index.html", "app.js?v=1.0.1", "manifest.json", "favicon.ico",
   "icons/icon-192.png", "icons/icon-512.png", "icons/icon-maskable-512.png", "icons/apple-touch-icon.png", "icons/favicon-64.png"];
 self.addEventListener("install", e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting())); });
@@ -9,7 +9,9 @@ self.addEventListener("fetch", e => {
   const url = new URL(e.request.url);
   // σελίδα: πρώτα το δίκτυο (για ενημερώσεις), αλλιώς η αποθηκευμένη
   if (e.request.mode === "navigate") {
-    e.respondWith(fetch(e.request).then(r => { const cp = r.clone(); caches.open(CACHE).then(c => c.put("index.html", cp)); return r; }).catch(() => caches.match("index.html")));
+    const isApp = url.pathname === "/" || url.pathname.endsWith("/index.html");
+    e.respondWith(fetch(e.request).then(r => { if (r.ok) { const cp = r.clone(); caches.open(CACHE).then(c => c.put(isApp ? "index.html" : e.request, cp)); } return r; })
+      .catch(() => (isApp ? caches.match("index.html") : caches.match(e.request).then(h => h || caches.match("index.html")))));
     return;
   }
   // υπόλοιπα (και γραμματοσειρές Google): από την αποθήκη, αλλιώς δίκτυο και αποθήκευση
