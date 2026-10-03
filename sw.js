@@ -1,5 +1,5 @@
 // BOLO RIG PRO — service worker (λειτουργία χωρίς internet)
-const CACHE = "bolorigpro-1.0.1";
+const CACHE = "bolorigpro-1.0.2";
 const SHELL = ["./", "index.html", "app.js?v=1.0.1", "manifest.json", "favicon.ico",
   "icons/icon-192.png", "icons/icon-512.png", "icons/icon-maskable-512.png", "icons/apple-touch-icon.png", "icons/favicon-64.png"];
 self.addEventListener("install", e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting())); });

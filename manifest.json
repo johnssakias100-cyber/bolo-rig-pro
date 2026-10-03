@@ -1,4 +1,5 @@
 {
+  "id": "/",
   "name": "BOLO RIG PRO — Bolognese Rig Tool",
   "short_name": "BOLO RIG PRO",
   "description": "Υπολογισμός βαριδιών και σχέδιο αρματωσιάς bolognese",
@@ -27,6 +28,33 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
+    }
+  ],
+  "categories": [
+    "sports",
+    "utilities"
+  ],
+  "screenshots": [
+    {
+      "src": "screenshots/screenshot-1.jpg",
+      "sizes": "1080x2134",
+      "type": "image/jpeg",
+      "form_factor": "narrow",
+      "label": "Υπολογισμός βαριδιών"
+    },
+    {
+      "src": "screenshots/screenshot-2.jpg",
+      "sizes": "1080x2134",
+      "type": "image/jpeg",
+      "form_factor": "narrow",
+      "label": "Αποστάσεις βαριδιών"
+    },
+    {
+      "src": "screenshots/screenshot-3.jpg",
+      "sizes": "1080x2134",
+      "type": "image/jpeg",
+      "form_factor": "narrow",
+      "label": "Σχέδιο αρματωσιάς"
     }
   ]
 }
