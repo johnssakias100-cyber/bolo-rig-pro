@@ -303,7 +303,7 @@ var LOG_T = {
     empty: "Δεν υπάρχουν καταχωρίσεις ακόμα. Κράτα σημειώσεις για κάθε εξόρμηση: πού, πώς και τι έπιασες.",
     date: "Ημερομηνία", place: "Τοποθεσία", placePh: "π.χ. Λιμάνι Πειραιά", depth: "Βάθος (μ)", rig: "Αρματωσιά", rigNone: "—", rigCurrent: "Τρέχων υπολογισμός", float: "Φελλός (γρ)",
     line: "Παράμαλλο", diam: "Διάμετρος (mm)", len: "Μήκος (cm)", hook: "Αγκίστρι (νούμερο)", wind: "Άνεμος", windDir: "Διεύθυνση", bf: "Μποφόρ", calm: "Άπνοια",
-    bait: "Δόλωμα", catch: "Ψαριά", catchPh: "π.χ. 6 σαργοί, 2 λαβράκια", notes: "Σημειώσεις", savedToast: "✓ Αποθηκεύτηκε στο ημερολόγιο", entries: (n) => n === 1 ? "1 καταχώριση" : `${n} καταχωρίσεις`,
+    bait: "Δόλωμα", catch: "Ψαριά", catchPh: "π.χ. 6 σαργοί, 2 λαβράκια", notes: "Σημειώσεις", savedToast: "✓ Αποθηκεύτηκε στο ημερολόγιο", photos: "Φωτογραφίες", addPhoto: "📷 Προσθήκη φωτογραφίας", photoBusy: "Επεξεργασία…", photoMax: (n) => `Έως ${n} φωτογραφίες ανά καταχώριση`, photoErr: "Η φωτογραφία δεν αποθηκεύτηκε", entries: (n) => n === 1 ? "1 καταχώριση" : `${n} καταχωρίσεις`,
     dirs: { N: "Βόρειος", NE: "Βορειοανατολικός", E: "Ανατολικός", SE: "Νοτιοανατολικός", S: "Νότιος", SW: "Νοτιοδυτικός", W: "Δυτικός", NW: "Βορειοδυτικός" },
   },
   en: {
@@ -311,7 +311,7 @@ var LOG_T = {
     empty: "No entries yet. Keep notes for every session: where, how and what you caught.",
     date: "Date", place: "Location", placePh: "e.g. Piraeus harbour", depth: "Depth (m)", rig: "Rig", rigNone: "—", rigCurrent: "Current calculation", float: "Float (g)",
     line: "Hooklength", diam: "Diameter (mm)", len: "Length (cm)", hook: "Hook (size)", wind: "Wind", windDir: "Direction", bf: "Beaufort", calm: "Calm",
-    bait: "Bait", catch: "Catch", catchPh: "e.g. 6 bream, 2 bass", notes: "Notes", savedToast: "✓ Saved to the log", entries: (n) => n === 1 ? "1 entry" : `${n} entries`,
+    bait: "Bait", catch: "Catch", catchPh: "e.g. 6 bream, 2 bass", notes: "Notes", savedToast: "✓ Saved to the log", photos: "Photos", addPhoto: "📷 Add photo", photoBusy: "Processing…", photoMax: (n) => `Up to ${n} photos per entry`, photoErr: "The photo could not be saved", entries: (n) => n === 1 ? "1 entry" : `${n} entries`,
     dirs: { N: "North", NE: "North-east", E: "East", SE: "South-east", S: "South", SW: "South-west", W: "West", NW: "North-west" },
   },
   it: {
@@ -319,7 +319,7 @@ var LOG_T = {
     empty: "Nessuna voce. Annota ogni uscita: dove, come e cosa hai preso.",
     date: "Data", place: "Luogo", placePh: "es. Porto di Genova", depth: "Profondità (m)", rig: "Montatura", rigNone: "—", rigCurrent: "Calcolo attuale", float: "Galleggiante (g)",
     line: "Finale", diam: "Diametro (mm)", len: "Lunghezza (cm)", hook: "Amo (numero)", wind: "Vento", windDir: "Direzione", bf: "Beaufort", calm: "Calma",
-    bait: "Esca", catch: "Pescato", catchPh: "es. 6 saraghi, 2 spigole", notes: "Note", savedToast: "✓ Salvato nel diario", entries: (n) => n === 1 ? "1 voce" : `${n} voci`,
+    bait: "Esca", catch: "Pescato", catchPh: "es. 6 saraghi, 2 spigole", notes: "Note", savedToast: "✓ Salvato nel diario", photos: "Foto", addPhoto: "📷 Aggiungi foto", photoBusy: "Elaborazione…", photoMax: (n) => `Fino a ${n} foto per voce`, photoErr: "Impossibile salvare la foto", entries: (n) => n === 1 ? "1 voce" : `${n} voci`,
     dirs: { N: "Tramontana (N)", NE: "Grecale (NE)", E: "Levante (E)", SE: "Scirocco (SE)", S: "Ostro (S)", SW: "Libeccio (SW)", W: "Ponente (W)", NW: "Maestrale (NW)" },
   },
 };
@@ -334,13 +334,79 @@ var fmtDate = (iso, lang) => {
   try { return new Date(y, m - 1, d).toLocaleDateString(lang === "el" ? "el-GR" : lang === "it" ? "it-IT" : "en-GB", { day: "numeric", month: "short", year: "numeric" }); }
   catch (e) { return iso; }
 };
-var emptyEntry = () => ({ id: null, date: todayISO(), place: "", depth: "", rigName: "", floatG: "", rigDesc: "", lineDiam: "", lineLen: "", hook: "", windDir: "", bf: "", bait: "", catch: "", notes: "" });
+// ─── Φωτογραφίες ημερολογίου (Pro) ──────────────────────────────────────────
+// Συμπιέζονται στο κινητό (~1280px, JPEG) και αποθηκεύονται ΜΟΝΟ στη συσκευή,
+// σε IndexedDB (όχι localStorage, που έχει όριο ~5 MB). Η καταχώριση κρατά
+// μόνο τα αναγνωριστικά τους στο πεδίο photos.
+var MAX_PHOTOS = 4;
+var photoDbP = null;
+var photoDb = () => photoDbP || (photoDbP = new Promise((res, rej) => {
+  var r = indexedDB.open("bolorig-photos", 1);
+  r.onupgradeneeded = () => r.result.createObjectStore("photos");
+  r.onsuccess = () => res(r.result);
+  r.onerror = () => { photoDbP = null; rej(r.error); };
+}));
+var photoTx = (mode, fn) => photoDb().then((db) => new Promise((res, rej) => {
+  var tx = db.transaction("photos", mode), req = fn(tx.objectStore("photos"));
+  tx.oncomplete = () => res(req && req.result);
+  tx.onerror = tx.onabort = () => rej(tx.error);
+}));
+var photoPut = (id, blob) => photoTx("readwrite", (st) => st.put(blob, id));
+var photoGet = (id) => photoTx("readonly", (st) => st.get(id));
+var photoDel = (ids) => ids && ids.length ? photoTx("readwrite", (st) => { ids.forEach((i) => st.delete(i)); }).catch(() => {}) : Promise.resolve();
+async function compressPhoto(file) {
+  var MAX = 1280, src, bmp = null, w, ht, tmpUrl = null;
+  try { bmp = await createImageBitmap(file, { imageOrientation: "from-image" }); src = bmp; w = bmp.width; ht = bmp.height; }
+  catch (e) {
+    tmpUrl = URL.createObjectURL(file);
+    src = await new Promise((res, rej) => { var im = new Image(); im.onload = () => res(im); im.onerror = rej; im.src = tmpUrl; });
+    w = src.naturalWidth; ht = src.naturalHeight;
+  }
+  var k = Math.min(1, MAX / Math.max(w, ht)), c = document.createElement("canvas");
+  c.width = Math.round(w * k); c.height = Math.round(ht * k);
+  c.getContext("2d").drawImage(src, 0, 0, c.width, c.height);
+  if (bmp && bmp.close) bmp.close();
+  if (tmpUrl) URL.revokeObjectURL(tmpUrl);
+  return await new Promise((res, rej) => c.toBlob((b) => b ? res(b) : rej(new Error("toBlob")), "image/jpeg", 0.8));
+}
+function usePhotoUrl(id) {
+  var [url, setUrl] = React.useState(null);
+  React.useEffect(() => {
+    var alive = true, u = null;
+    photoGet(id).then((b) => { if (b && alive) { u = URL.createObjectURL(b); setUrl(u); } }).catch(() => {});
+    return () => { alive = false; if (u) URL.revokeObjectURL(u); };
+  }, [id]);
+  return url;
+}
+function PhotoThumb({ id, size, onOpen, onRemove }) {
+  var url = usePhotoUrl(id);
+  return (
+    <div style={{ position: "relative", width: size, height: size, borderRadius: 6, overflow: "hidden", background: h.raised, border: `1px solid ${h.line}`, flexShrink: 0 }}>
+      {url && <img src={url} alt="" onClick={onOpen} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", cursor: onOpen ? "zoom-in" : "default" }} />}
+      {onRemove && <button type="button" aria-label="×" onClick={onRemove} style={{ position: "absolute", top: 4, right: 4, width: 28, height: 28, borderRadius: 14, border: "none", background: "rgba(0,0,0,0.6)", color: "#fff", fontSize: 18, lineHeight: "28px", padding: 0, cursor: "pointer" }}>×</button>}
+    </div>
+  );
+}
+function PhotoViewer({ id, onClose }) {
+  var url = usePhotoUrl(id);
+  return (
+    <div role="dialog" onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 1000, background: "rgba(0,0,0,0.92)", display: "flex", alignItems: "center", justifyContent: "center", padding: 12, paddingTop: "calc(12px + env(safe-area-inset-top, 0px))", paddingBottom: "calc(12px + env(safe-area-inset-bottom, 0px))", cursor: "zoom-out" }}>
+      {url && <img src={url} alt="" style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain", borderRadius: 4 }} />}
+      <button type="button" aria-label="×" onClick={onClose} style={{ position: "absolute", top: "calc(12px + env(safe-area-inset-top, 0px))", right: 12, width: 40, height: 40, borderRadius: 20, border: "none", background: "rgba(255,255,255,0.15)", color: "#fff", fontSize: 24, cursor: "pointer" }}>×</button>
+    </div>
+  );
+}
+
+var emptyEntry = () => ({ id: null, date: todayISO(), place: "", depth: "", rigName: "", floatG: "", rigDesc: "", lineDiam: "", lineLen: "", hook: "", windDir: "", bf: "", bait: "", catch: "", notes: "", photos: [] });
 
 function FishingLog({ lang, presets, current, toast }) {
   var L2 = LOG_T[lang] || LOG_T.el;
   var [entries, setEntries] = React.useState(() => { var v = gu("log", []); return Array.isArray(v) ? v : []; });
   var [form, setForm] = React.useState(null);
   var [openId, setOpenId] = React.useState(null);
+  var [viewId, setViewId] = React.useState(null);
+  var [busy, setBusy] = React.useState(false);
+  var fileRef = React.useRef(null);
   React.useEffect(() => { mu("log", entries); }, [entries]);
   var places = React.useMemo(() => [...new Set(entries.map((x) => x.place).filter(Boolean))], [entries]);
   var set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
@@ -350,12 +416,41 @@ function FishingLog({ lang, presets, current, toast }) {
     var p = presets.find((x) => String(x.id) === val);
     if (p) setForm((f) => ({ ...f, rigName: p.name, floatG: p.grams || f.floatG, lineLen: f.lineLen || p.leaderCm || "", rigDesc: p.grams ? `${p.grams} g` : "" }));
   };
+  var addPhotos = async (files) => {
+    var room = MAX_PHOTOS - (form.photos || []).length;
+    var list = Array.from(files || []).slice(0, Math.max(0, room));
+    if (!list.length) return;
+    setBusy(true);
+    try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch (e) {}
+    var ids = [];
+    try {
+      for (var f of list) {
+        var b = await compressPhoto(f);
+        var pid = `p${Date.now()}${Math.random().toString(36).slice(2, 7)}`;
+        await photoPut(pid, b);
+        ids.push(pid);
+      }
+    } catch (e) { toast && toast(L2.photoErr, false); }
+    finally {
+      if (ids.length) setForm((fm) => fm && { ...fm, photos: [...(fm.photos || []), ...ids] });
+      setBusy(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  };
+  var removePhoto = (pid) => setForm((fm) => ({ ...fm, photos: (fm.photos || []).filter((x) => x !== pid) }));
+  var cancel = () => {
+    var orig = form._orig || [];
+    photoDel((form.photos || []).filter((x) => !orig.includes(x)));
+    setForm(null);
+  };
   var save = () => {
-    var e = { ...form, id: form.id || Date.now() };
+    var { _orig, ...rest } = form;
+    var e = { ...rest, id: rest.id || Date.now() };
+    photoDel((_orig || []).filter((x) => !(e.photos || []).includes(x)));
     setEntries((list) => [e, ...list.filter((x) => x.id !== e.id)].sort((a, b) => (b.date || "").localeCompare(a.date || "") || b.id - a.id));
     setForm(null); setOpenId(e.id); toast && toast(L2.savedToast);
   };
-  var remove = (id) => { if (window.confirm(L2.confirmDel)) { setEntries((l) => l.filter((x) => x.id !== id)); setOpenId(null); } };
+  var remove = (id) => { if (window.confirm(L2.confirmDel)) { var gone = entries.find((x) => x.id === id); photoDel(gone && gone.photos); setEntries((l) => l.filter((x) => x.id !== id)); setOpenId(null); } };
   var inp = { width: "100%", minHeight: 40, padding: "8px 10px", border: `1px solid ${h.line2}`, borderRadius: 5, fontFamily: Ot, fontSize: 15, color: h.text, background: h.surface, boxSizing: "border-box" };
   var F2 = ({ label, children, span }) => (
     <label style={{ display: "block", gridColumn: span ? "1 / -1" : undefined }}>
@@ -404,12 +499,27 @@ function FishingLog({ lang, presets, current, toast }) {
           ) })}
           {F2({ span: true, label: L2.bait, children: <input value={form.bait} onChange={(ev) => set("bait", ev.target.value)} style={inp} /> })}
           {F2({ span: true, label: L2.catch, children: <input value={form.catch} placeholder={L2.catchPh} onChange={(ev) => set("catch", ev.target.value)} style={inp} /> })}
+          <div style={{ gridColumn: "1 / -1" }}>
+            <div style={{ fontSize: 12, color: h.muted, fontWeight: 500, marginBottom: 4, display: "flex", alignItems: "center" }}>{L2.photos}{Badge}</div>
+            {(form.photos || []).length > 0 && (
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 8 }}>
+                {form.photos.map((pid) => <PhotoThumb key={pid} id={pid} size={76} onOpen={() => setViewId(pid)} onRemove={() => removePhoto(pid)} />)}
+              </div>
+            )}
+            <input ref={fileRef} type="file" accept="image/*" multiple onChange={(ev) => addPhotos(ev.target.files)} style={{ display: "none" }} />
+            {(form.photos || []).length < MAX_PHOTOS ? (
+              <button type="button" disabled={busy} onClick={() => fileRef.current && fileRef.current.click()} style={{ ...ql, minHeight: 44, width: "100%", opacity: busy ? 0.6 : 1 }}>{busy ? L2.photoBusy : L2.addPhoto}</button>
+            ) : (
+              <div style={{ fontSize: 12, color: h.muted }}>{L2.photoMax(MAX_PHOTOS)}</div>
+            )}
+          </div>
           {F2({ span: true, label: L2.notes, children: <textarea rows={3} value={form.notes} onChange={(ev) => set("notes", ev.target.value)} style={{ ...inp, resize: "vertical" }} /> })}
         </div>
         <div style={{ display: "flex", gap: 8, marginTop: 14 }}>
-          <button onClick={() => setForm(null)} style={{ ...ql, minHeight: 44 }}>{L2.cancel}</button>
-          <button onClick={save} disabled={!form.date} style={an(!form.date)}>{L2.save}</button>
+          <button onClick={cancel} style={{ ...ql, minHeight: 44 }}>{L2.cancel}</button>
+          <button onClick={save} disabled={!form.date || busy} style={an(!form.date || busy)}>{L2.save}</button>
         </div>
+        {viewId && <PhotoViewer id={viewId} onClose={() => setViewId(null)} />}
       </Le>
     );
   }
@@ -426,7 +536,7 @@ function FishingLog({ lang, presets, current, toast }) {
         <div style={{ fontSize: 18, fontWeight: 800, color: h.navy, display: "flex", alignItems: "center" }}>{L2.title}{Badge}</div>
         <span style={{ fontSize: 12, color: h.muted }}>{entries.length ? L2.entries(entries.length) : ""}</span>
       </div>
-      <button onClick={() => setForm(emptyEntry())} style={{ ...an(false), width: "100%", marginBottom: 12 }}>{L2.add}</button>
+      <button onClick={() => setForm({ ...emptyEntry(), _orig: [] })} style={{ ...an(false), width: "100%", marginBottom: 12 }}>{L2.add}</button>
       {entries.length === 0 && <Le><div style={{ fontSize: 14, lineHeight: 1.5, color: h.muted }}>{L2.empty}</div></Le>}
       {entries.map((x) => {
         var isOpen = openId === x.id;
@@ -441,7 +551,7 @@ function FishingLog({ lang, presets, current, toast }) {
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontWeight: 800, fontSize: 15, color: h.text, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{x.place || "—"}</div>
                 <div style={{ fontSize: 12, color: h.muted, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                  {[x.depth ? `${x.depth} m` : "", x.rigName, wind, x.catch].filter(Boolean).join(" · ")}
+                  {[x.photos && x.photos.length ? `📷 ${x.photos.length}` : "", x.depth ? `${x.depth} m` : "", x.rigName, wind, x.catch].filter(Boolean).join(" · ")}
                 </div>
               </div>
               <span style={{ color: h.muted }}>{isOpen ? "▲" : "▼"}</span>
@@ -458,9 +568,14 @@ function FishingLog({ lang, presets, current, toast }) {
                 {row(L2.wind, wind)}
                 {row(L2.bait, x.bait)}
                 {row(L2.catch, x.catch)}
+                {x.photos && x.photos.length > 0 && (
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 10 }}>
+                    {x.photos.map((pid) => <PhotoThumb key={pid} id={pid} size={88} onOpen={() => setViewId(pid)} />)}
+                  </div>
+                )}
                 {x.notes ? <div style={{ fontSize: 14, marginTop: 8, whiteSpace: "pre-wrap", lineHeight: 1.45 }}>{x.notes}</div> : null}
                 <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
-                  <button onClick={() => setForm({ ...emptyEntry(), ...x })} style={{ ...ql, minHeight: 38, flex: 1 }}>{L2.edit}</button>
+                  <button onClick={() => setForm({ ...emptyEntry(), ...x, _orig: x.photos || [] })} style={{ ...ql, minHeight: 38, flex: 1 }}>{L2.edit}</button>
                   <button onClick={() => remove(x.id)} style={{ ...ql, minHeight: 38, color: h.bad, borderColor: `${h.bad}88` }}>{L2.del}</button>
                 </div>
               </div>
@@ -468,6 +583,7 @@ function FishingLog({ lang, presets, current, toast }) {
           </Le>
         );
       })}
+      {viewId && <PhotoViewer id={viewId} onClose={() => setViewId(null)} />}
     </>
   );
 }
