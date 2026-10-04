@@ -346,7 +346,7 @@ function FishingLog({ lang, presets, current, toast }) {
     if (val === "") { setForm((f) => ({ ...f, rigName: "", rigDesc: "" })); return; }
     if (val === "__current" && current) { setForm((f) => ({ ...f, rigName: L2.rigCurrent, floatG: current.floatG || f.floatG, rigDesc: current.desc })); return; }
     var p = presets.find((x) => String(x.id) === val);
-    if (p) setForm((f) => ({ ...f, rigName: p.name, floatG: p.grams || f.floatG, lineLen: f.lineLen || p.leaderCm || "", rigDesc: `${p.count || "?"} × · ${p.grams || "?"} g` }));
+    if (p) setForm((f) => ({ ...f, rigName: p.name, floatG: p.grams || f.floatG, lineLen: f.lineLen || p.leaderCm || "", rigDesc: p.grams ? `${p.grams} g` : "" }));
   };
   var save = () => {
     var e = { ...form, id: form.id || Date.now() };
@@ -449,7 +449,7 @@ function FishingLog({ lang, presets, current, toast }) {
                 {row(L2.date, fmtDate(x.date, lang))}
                 {row(L2.place, x.place)}
                 {row(L2.depth, x.depth ? `${x.depth} m` : "")}
-                {row(L2.rig, [x.rigName, x.rigDesc].filter(Boolean).join(" · "))}
+                {row(L2.rig, [x.rigName, (x.rigDesc || "").replace(/^[^·]*× · /, "")].filter(Boolean).join(" · "))}
                 {row(L2.float, x.floatG ? `${x.floatG} g` : "")}
                 {row(L2.line, [x.lineDiam ? `Ø ${x.lineDiam} mm` : "", x.lineLen ? `${x.lineLen} cm` : ""].filter(Boolean).join(" · "))}
                 {row(L2.hook, x.hook)}
