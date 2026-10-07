@@ -3,7 +3,7 @@
  * Ανακατασκευάστηκε τον Οκτ. 2026 από την έκδοση που τρέχει στο bolorig.vercel.app,
  * γιατί το παλιό App.js δεν είχε το νέο UI. Οι αρχικές λειτουργίες κρατούν τα
  * σύντομα ονόματα μεταβλητών της έκδοσης παραγωγής· οι νέες προσθήκες
- * (ιταλικά, χειροκίνητη επιλογή, ημερολόγιο) είναι γραμμένες καθαρά σε JSX.
+ * (ιταλικά, χειροκίνητη επιλογή, ημερολόγιο, φελλοί) είναι γραμμένες καθαρά σε JSX.
  *
  * Build: esbuild src/App.jsx --bundle --minify --format=iife --outfile=app.js
  */
@@ -190,6 +190,41 @@ Lm.it = {
   manualApplied: "✓ La tua selezione è ora il risultato",
 };
 
+// ─── Φελλοί (1.0.11) ─────────────────────────────────────────────────────────
+Object.assign(Lm.el, {
+  floatsTitle: "Φελλοί", floatLbl: "Φελλός", floatNone: "— Χωρίς φελλό —",
+  floatEmptyHint: "Δεν έχεις φελλούς ακόμα. Πρόσθεσέ τους στην Αποθήκη και ο στόχος θα μπαίνει αυτόματα.",
+  floatGo: "Στους φελλούς ↓", newFloat: "+ Νέος φελλός", floatNameLbl: "Όνομα φελλού", floatNamePh: "π.χ. Menta",
+  nominalLbl: "Ονομαστικό (γρ)", realLbl: "Πραγματικό (γρ)", addSize: "+ Προσθήκη νούμερου", delFloat: "Διαγραφή φελλού",
+  confirmDelFloat: (n) => `Διαγραφή του φελλού «${n}» με όλα τα νούμερά του;`,
+  floatDup: "Υπάρχει ήδη φελλός με αυτό το όνομα.", noSizes: "Πρόσθεσε το πρώτο νούμερο αυτού του φελλού.",
+  floatsEmpty: "Η λίστα είναι άδεια. Πρόσθεσε τον πρώτο σου φελλό.",
+  realHint: "Πραγματικό = η φόρτωση που μέτρησες· αυτό μπαίνει στον στόχο. Αν μείνει κενό, μπαίνει το ονομαστικό.",
+  sizesCount: (n) => n === 1 ? "1 νούμερο" : `${n} νούμερα`,
+});
+Object.assign(Lm.en, {
+  floatsTitle: "Floats", floatLbl: "Float", floatNone: "— No float —",
+  floatEmptyHint: "No floats yet. Add them in the Inventory and the target fills in automatically.",
+  floatGo: "To floats ↓", newFloat: "+ New float", floatNameLbl: "Float name", floatNamePh: "e.g. Menta",
+  nominalLbl: "Nominal (g)", realLbl: "Actual (g)", addSize: "+ Add size", delFloat: "Delete float",
+  confirmDelFloat: (n) => `Delete the float "${n}" and all its sizes?`,
+  floatDup: "A float with this name already exists.", noSizes: "Add the first size of this float.",
+  floatsEmpty: "The list is empty. Add your first float.",
+  realHint: "Actual = the load you measured; it becomes the target. If left empty, the nominal is used.",
+  sizesCount: (n) => n === 1 ? "1 size" : `${n} sizes`,
+});
+Object.assign(Lm.it, {
+  floatsTitle: "Galleggianti", floatLbl: "Galleggiante", floatNone: "— Nessun galleggiante —",
+  floatEmptyHint: "Nessun galleggiante ancora. Aggiungili nel Magazzino e l'obiettivo si compila da solo.",
+  floatGo: "Ai galleggianti ↓", newFloat: "+ Nuovo galleggiante", floatNameLbl: "Nome del galleggiante", floatNamePh: "es. Menta",
+  nominalLbl: "Nominale (g)", realLbl: "Reale (g)", addSize: "+ Aggiungi misura", delFloat: "Elimina galleggiante",
+  confirmDelFloat: (n) => `Eliminare il galleggiante «${n}» con tutte le sue misure?`,
+  floatDup: "Esiste già un galleggiante con questo nome.", noSizes: "Aggiungi la prima misura di questo galleggiante.",
+  floatsEmpty: "L'elenco è vuoto. Aggiungi il tuo primo galleggiante.",
+  realHint: "Reale = la portata che hai misurato; diventa l'obiettivo. Se resta vuoto, si usa il nominale.",
+  sizesCount: (n) => n === 1 ? "1 misura" : `${n} misure`,
+});
+
 // Γλώσσες: σειρά στο μενού, σύντομος κωδικός στο κουμπί, όνομα στη λίστα.
 // Νέα γλώσσα = μία ακόμη εγγραφή σε καθένα από τα τρία.
 var LANGS = ["el", "en", "it"];
@@ -323,6 +358,9 @@ var LOG_T = {
     dirs: { N: "Tramontana (N)", NE: "Grecale (NE)", E: "Levante (E)", SE: "Scirocco (SE)", S: "Ostro (S)", SW: "Libeccio (SW)", W: "Ponente (W)", NW: "Maestrale (NW)" },
   },
 };
+Object.assign(LOG_T.el, { floatModel: "Μοντέλο φελλού" });
+Object.assign(LOG_T.en, { floatModel: "Float model" });
+Object.assign(LOG_T.it, { floatModel: "Modello di galleggiante" });
 var WIND_DIRS = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
 var todayISO = () => {
   var d = new Date();
@@ -397,7 +435,7 @@ function PhotoViewer({ id, onClose }) {
   );
 }
 
-var emptyEntry = () => ({ id: null, date: todayISO(), place: "", depth: "", rigName: "", floatG: "", rigDesc: "", lineDiam: "", lineLen: "", hook: "", windDir: "", bf: "", bait: "", catch: "", notes: "", photos: [] });
+var emptyEntry = () => ({ id: null, date: todayISO(), place: "", depth: "", rigName: "", floatG: "", floatName: "", rigDesc: "", lineDiam: "", lineLen: "", hook: "", windDir: "", bf: "", bait: "", catch: "", notes: "", photos: [] });
 
 function FishingLog({ lang, presets, current, toast }) {
   var L2 = LOG_T[lang] || LOG_T.el;
@@ -412,9 +450,9 @@ function FishingLog({ lang, presets, current, toast }) {
   var set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
   var pickRig = (val) => {
     if (val === "") { setForm((f) => ({ ...f, rigName: "", rigDesc: "" })); return; }
-    if (val === "__current" && current) { setForm((f) => ({ ...f, rigName: L2.rigCurrent, floatG: current.floatG || f.floatG, rigDesc: current.desc })); return; }
+    if (val === "__current" && current) { setForm((f) => ({ ...f, rigName: L2.rigCurrent, floatG: current.floatG || f.floatG, floatName: current.floatName || f.floatName || "", rigDesc: current.desc })); return; }
     var p = presets.find((x) => String(x.id) === val);
-    if (p) setForm((f) => ({ ...f, rigName: p.name, floatG: p.grams || f.floatG, lineLen: f.lineLen || p.leaderCm || "", rigDesc: p.grams ? `${p.grams} g` : "" }));
+    if (p) setForm((f) => ({ ...f, rigName: p.name, floatG: p.grams || f.floatG, floatName: p.floatName || f.floatName || "", lineLen: f.lineLen || p.leaderCm || "", rigDesc: p.grams ? `${p.grams} g` : "" }));
   };
   var addPhotos = async (files) => {
     var room = MAX_PHOTOS - (form.photos || []).length;
@@ -481,6 +519,7 @@ function FishingLog({ lang, presets, current, toast }) {
               {presets.map((p) => <option key={p.id} value={String(p.id)}>{p.name}</option>)}
             </select>
           ) })}
+          {F2({ span: true, label: L2.floatModel, children: <input value={form.floatName || ""} placeholder="Menta 2.0" onChange={(ev) => set("floatName", ev.target.value)} style={inp} /> })}
           {F2({ label: L2.float, children: <input type="number" inputMode="decimal" value={form.floatG} onChange={(ev) => set("floatG", ev.target.value)} style={inp} /> })}
           {F2({ label: L2.hook, children: <input value={form.hook} onChange={(ev) => set("hook", ev.target.value)} style={inp} /> })}
           {F2({ label: `${L2.line} · ${L2.diam}`, children: <input type="number" inputMode="decimal" step="0.01" placeholder="0.14" value={form.lineDiam} onChange={(ev) => set("lineDiam", ev.target.value)} style={inp} /> })}
@@ -562,7 +601,7 @@ function FishingLog({ lang, presets, current, toast }) {
                 {row(L2.place, x.place)}
                 {row(L2.depth, x.depth ? `${x.depth} m` : "")}
                 {row(L2.rig, [x.rigName, (x.rigDesc || "").replace(/^[^·]*× · /, "")].filter(Boolean).join(" · "))}
-                {row(L2.float, x.floatG ? `${x.floatG} g` : "")}
+                {row(L2.float, [x.floatName, x.floatG ? `${x.floatG} g` : ""].filter(Boolean).join(" · "))}
                 {row(L2.line, [x.lineDiam ? `Ø ${x.lineDiam} mm` : "", x.lineLen ? `${x.lineLen} cm` : ""].filter(Boolean).join(" · "))}
                 {row(L2.hook, x.hook)}
                 {row(L2.wind, wind)}
@@ -769,7 +808,7 @@ var nn = ({ d: l, size: t = 20 }) => o.default.createElement("svg", { width: t, 
 function gh({ value: l, onChange: t, clearLabel: e, ...a }) {
   return o.default.createElement("div", { style: { position: "relative" } }, o.default.createElement("input", { value: l, onChange: (n) => t(n.target.value), onFocus: (n) => n.target.select(), style: Sh(), ...a }), l !== "" && o.default.createElement("button", { type: "button", "aria-label": e, onClick: () => t(""), style: { position: "absolute", right: 6, top: "50%", transform: "translateY(-50%)", width: 28, height: 28, borderRadius: 8, border: "none", background: h.raised, color: h.muted, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", padding: 0 } }, o.default.createElement(nn, { d: un.x, size: 16 })));
 }
-function Vm({ positions: l, totalCm: t, floatSet: e, leaderCm: a = 0, floatGrams: n = 0, rigLen: u, t: i }) {
+function Vm({ positions: l, totalCm: t, floatSet: e, leaderCm: a = 0, floatGrams: n = 0, rigLen: u, t: i, floatName: fN }) {
   if (!l || l.length === 0) return null;
   let f = Math.max(0, a || 0), c = Math.min(14, Math.max(4, Math.round(500 / Math.max(t, 10)))), g = 110, b = 40, S = "#7F93A8", p = l.some((v) => v.shot.isTorpedo), y = (v) => String(Math.round(v * 100) / 100), z = [], C = {};
   l.forEach((v) => {
@@ -812,7 +851,7 @@ function Vm({ positions: l, totalCm: t, floatSet: e, leaderCm: a = 0, floatGrams
     kl[v.id] = { top: Math.min(M(v.hi), H - v.items.length * 8), bot: H };
   });
   let xl = [];
-  xl.push({ key: "float", y: 60, h: 36, node: o.default.createElement(o.default.Fragment, null, o.default.createElement("div", { style: { fontSize: 13, color: h.text, fontWeight: 700 } }, i.floatTop), o.default.createElement("div", { style: { fontSize: 11, color: h.muted } }, n > 0 && o.default.createElement("b", { style: { color: h.navy } }, n.toFixed(2), " ", i.grUnit), u == null && o.default.createElement(o.default.Fragment, null, " · ", y(t), " cm"))) }), z.forEach((v, H) => {
+  xl.push({ key: "float", y: 60, h: 36, node: o.default.createElement(o.default.Fragment, null, o.default.createElement("div", { style: { fontSize: 13, color: h.text, fontWeight: 700 } }, fN || i.floatTop), o.default.createElement("div", { style: { fontSize: 11, color: h.muted } }, n > 0 && o.default.createElement("b", { style: { color: h.navy } }, n.toFixed(2), " ", i.grUnit), u == null && o.default.createElement(o.default.Fragment, null, " · ", y(t), " cm"))) }), z.forEach((v, H) => {
     let Q = F(v.kind), ul;
     if (v.kind === "bulk") {
       let Dt = Rc(v.items).map((ct) => `${ct.cnt}× ${ct.shot.code}`).join(" + "), Wl = v.items.reduce((ct, ua) => ct + ua.grams, 0);
@@ -880,12 +919,194 @@ var Th = "bolorigpro.v1.", gu = (l, t) => {
   } catch (e) {
   }
 }, ph = (l, t) => Array.isArray(l) && l.length ? l : t;
+// ─── Φελλοί (1.0.11) ─────────────────────────────────────────────────────────
+// Κάθε φελλός: { id, name, sizes: [{ id, nom, real }] }. Τα νούμερα κρατιούνται
+// ως κείμενο, για να γράφονται άνετα (π.χ. "2." ή "2,1"). Πραγματικό = η φόρτωση
+// που μέτρησε ο χρήστης· αν είναι κενό, φόρτωση = ονομαστικό.
+var fNum = (v) => { var x = parseFloat(String(v == null ? "" : v).replace(",", ".")); return isNaN(x) || x <= 0 ? null : x; };
+var fLoad = (sz) => fNum(sz.real) != null ? fNum(sz.real) : fNum(sz.nom);
+var fShow = (x) => { if (x == null) return ""; var s = String(Math.round(x * 1000) / 1000); return s.includes(".") ? s : x.toFixed(1); };
+var fDiff = (sz) => fNum(sz.real) != null && fNum(sz.nom) != null && Math.abs(fNum(sz.real) - fNum(sz.nom)) > 1e-9;
+var fSortModels = (list, lang) => [...list].sort((a, b) => a.name.localeCompare(b.name, lang, { sensitivity: "base", numeric: true }));
+var fSortSizes = (sizes) => [...(sizes || [])].sort((a, b) => (fNum(a.nom) || 0) - (fNum(b.nom) || 0));
+var fLabel = (m, sz) => `${m.name} ${fShow(fNum(sz.nom))}`;
+var fId = (p) => p + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+
+var FloatIcon = (
+  <svg width="34" height="34" viewBox="0 0 40 40" aria-hidden="true">
+    <rect x="2.5" y="2.5" width="35" height="35" rx="3" fill="#E6EEF8" stroke="#8FA8C8" strokeWidth="1" />
+    <line x1="20" y1="5" x2="20" y2="13" stroke="#F2551D" strokeWidth="2.6" strokeLinecap="round" />
+    <path d="M20 12 C26 15 27.5 22 26 27 C24.8 31 22.4 33.5 20 33.5 C17.6 33.5 15.2 31 14 27 C12.5 22 14 15 20 12 Z" fill="#2E9BEF" />
+    <path d="M20 12 C26 15 27.4 21 26.9 24 L13.1 24 C12.6 21 14 15 20 12 Z" fill="#FFFFFF" />
+    <rect x="13" y="23.2" width="14" height="2.2" fill="#1F3864" />
+    <line x1="20" y1="33.5" x2="20" y2="37.5" stroke="#5B636D" strokeWidth="1.6" strokeLinecap="round" />
+  </svg>
+);
+
+// Επιλογή φελλού στον Υπολογισμό: λίστα ανά μοντέλο (αλφαβητικά), νούμερα από μικρό σε μεγάλο.
+function FloatPick({ floats, value, onPick, onGo, t, lang }) {
+  var models = fSortModels(floats.filter((m) => (m.sizes || []).some((sz) => fNum(sz.nom) != null)), lang);
+  var picked = null;
+  if (value) {
+    var [mi, si] = value.split("|");
+    var pm = floats.find((m) => m.id === mi);
+    var ps = pm && (pm.sizes || []).find((sz) => sz.id === si);
+    if (pm && ps) picked = { m: pm, s: ps };
+  }
+  return (
+    <div role="group" aria-label={t.floatLbl} style={{ marginBottom: 12 }}>
+      <div style={{ fontSize: 12, color: h.muted, fontWeight: 500, marginBottom: 6 }}>{t.floatLbl}</div>
+      {models.length === 0 ? (
+        <div style={{ display: "flex", alignItems: "center", gap: 10, background: h.deep, border: `1px dashed ${h.line2}`, borderRadius: 5, padding: "8px 10px" }}>
+          <span style={{ flex: 1, fontSize: 13, color: h.muted, lineHeight: 1.45 }}>{t.floatEmptyHint}</span>
+          <button onClick={onGo} style={{ ...ql, flexShrink: 0 }}>{t.floatGo}</button>
+        </div>
+      ) : (
+        <>
+          <select value={picked ? value : ""} onChange={(ev) => onPick(ev.target.value)} aria-label={t.floatLbl} style={Nl({ fontSize: 15 })}>
+            <option value="">{t.floatNone}</option>
+            {models.map((m) => (
+              <optgroup key={m.id} label={m.name}>
+                {fSortSizes(m.sizes).filter((sz) => fNum(sz.nom) != null).map((sz) => (
+                  <option key={sz.id} value={`${m.id}|${sz.id}`}>
+                    {fLabel(m, sz)}{fDiff(sz) ? `  →  ${fShow(fNum(sz.real))} ${t.grUnit}` : ` ${t.grUnit}`}
+                  </option>
+                ))}
+              </optgroup>
+            ))}
+          </select>
+          {picked && fDiff(picked.s) && (
+            <div style={{ fontSize: 12, color: h.muted, marginTop: 5 }}>
+              {t.nominalLbl.replace(/\s*\(.*\)/, "")} {fShow(fNum(picked.s.nom))} · <b style={{ color: h.navy }}>{t.realLbl.replace(/\s*\(.*\)/, "")} {fShow(fNum(picked.s.real))} {t.grUnit}</b>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
+// Ένας φελλός στην Αποθήκη: πατάς το όνομα και ανοίγουν τα νούμερά του.
+function FloatModel({ m, open, onToggle, onChange, onDelete, t }) {
+  var [name, setName] = React.useState(m.name);
+  var [nom, setNom] = React.useState("");
+  var [real, setReal] = React.useState("");
+  React.useEffect(() => { setName(m.name); }, [m.name]);
+  var sizes = m.sizes || [];
+  var diffs = sizes.some(fDiff);
+  var setSize = (id, k, v) => onChange({ ...m, sizes: sizes.map((sz) => sz.id === id ? { ...sz, [k]: v } : sz) });
+  var tidy = () => onChange({ ...m, sizes: fSortSizes(sizes) });
+  var delSize = (id) => onChange({ ...m, sizes: sizes.filter((sz) => sz.id !== id) });
+  var addSize = () => {
+    if (fNum(nom) == null) return;
+    onChange({ ...m, sizes: fSortSizes([...sizes, { id: fId("s"), nom: nom.trim(), real: fNum(real) != null ? real.trim() : "" }]) });
+    setNom(""); setReal("");
+  };
+  var commitName = () => { var v = name.trim(); v && v !== m.name ? onChange({ ...m, name: v }) : setName(m.name); };
+  var cell = { width: "100%", minHeight: 38, boxSizing: "border-box", padding: "6px 8px", background: h.surface, border: `1px solid ${h.line2}`, borderRadius: 5, color: h.text, fontFamily: xt, fontSize: 17, fontWeight: 700, textAlign: "center", outline: "none" };
+  var cols = "1fr 1fr 18px 30px";
+  return (
+    <div style={{ background: h.deep, borderRadius: 5, border: open ? `1px solid ${h.line2}` : "1px solid transparent" }}>
+      <button onClick={onToggle} aria-expanded={open} style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "9px 12px", background: "transparent", border: "none", cursor: "pointer", fontFamily: Ot, color: h.text, textAlign: "left" }}>
+        <span style={{ fontWeight: 700, fontSize: 15, flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{m.name}</span>
+        {diffs && <span title={t.realLbl} style={{ color: h.goldBrand, fontSize: 12 }}>●</span>}
+        <span style={{ fontSize: 13, color: h.muted, whiteSpace: "nowrap" }}>{t.sizesCount(sizes.length)}</span>
+        <span aria-hidden="true" style={{ color: h.muted, fontSize: 16, transform: open ? "rotate(180deg)" : "none", transition: "transform .15s" }}>▾</span>
+      </button>
+      {open && (
+        <div style={{ padding: "2px 12px 12px" }}>
+          <label style={{ display: "block", marginBottom: 10 }}>
+            <div style={{ fontSize: 12, color: h.muted, fontWeight: 500, marginBottom: 4 }}>{t.floatNameLbl}</div>
+            <input value={name} onChange={(ev) => setName(ev.target.value)} onBlur={commitName} onKeyDown={(ev) => ev.key === "Enter" && ev.target.blur()} style={Nl({ background: h.surface })} />
+          </label>
+          <div style={{ display: "grid", gridTemplateColumns: cols, gap: 6, alignItems: "end", marginBottom: 4 }}>
+            <div style={{ fontSize: 12, color: h.muted, fontWeight: 500 }}>{t.nominalLbl}</div>
+            <div style={{ fontSize: 12, color: h.muted, fontWeight: 500 }}>{t.realLbl}</div>
+          </div>
+          {sizes.length === 0 && <div style={{ fontSize: 13, color: h.muted, margin: "4px 0 8px" }}>{t.noSizes}</div>}
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            {sizes.map((sz) => (
+              <div key={sz.id} style={{ display: "grid", gridTemplateColumns: cols, gap: 6, alignItems: "center" }}>
+                <input type="number" inputMode="decimal" step="0.05" min="0" value={sz.nom} aria-label={t.nominalLbl} onChange={(ev) => setSize(sz.id, "nom", ev.target.value)} onBlur={tidy} onFocus={(ev) => ev.target.select()} style={cell} />
+                <input type="number" inputMode="decimal" step="0.05" min="0" value={sz.real} placeholder={fShow(fNum(sz.nom))} aria-label={t.realLbl} onChange={(ev) => setSize(sz.id, "real", ev.target.value)} onFocus={(ev) => ev.target.select()} style={{ ...cell, color: fDiff(sz) ? h.navy : h.text }} />
+                <span aria-hidden="true" style={{ color: h.goldBrand, fontSize: 12, textAlign: "center" }}>{fDiff(sz) ? "●" : ""}</span>
+                <button onClick={() => delSize(sz.id)} style={Ic} aria-label={`${t.del} ${fShow(fNum(sz.nom))}`}>{React.createElement(nn, { d: un.x, size: 16 })}</button>
+              </div>
+            ))}
+            <div style={{ display: "grid", gridTemplateColumns: cols, gap: 6, alignItems: "center", marginTop: 4, paddingTop: 8, borderTop: `1px dashed ${h.line2}` }}>
+              <input type="number" inputMode="decimal" step="0.05" min="0" value={nom} placeholder="2.0" aria-label={t.nominalLbl} onChange={(ev) => setNom(ev.target.value)} onKeyDown={(ev) => ev.key === "Enter" && addSize()} style={cell} />
+              <input type="number" inputMode="decimal" step="0.05" min="0" value={real} placeholder={nom || "—"} aria-label={t.realLbl} onChange={(ev) => setReal(ev.target.value)} onKeyDown={(ev) => ev.key === "Enter" && addSize()} style={cell} />
+              <span />
+              <span />
+            </div>
+            <button onClick={addSize} disabled={fNum(nom) == null} style={{ ...ql, background: fNum(nom) == null ? "transparent" : h.accent, color: fNum(nom) == null ? h.faint : h.onAccent, border: fNum(nom) == null ? `1px solid ${h.line2}` : "none", cursor: fNum(nom) == null ? "default" : "pointer" }}>{t.addSize}</button>
+          </div>
+          <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 12 }}>
+            <button onClick={onDelete} style={{ ...ql, color: h.bad, borderColor: `${h.bad}66` }}>{t.delFloat}</button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function FloatList({ floats, setFloats, t, lang }) {
+  var [adding, setAdding] = React.useState(false);
+  var [newName, setNewName] = React.useState("");
+  var [err, setErr] = React.useState("");
+  var [openId, setOpenId] = React.useState(null);
+  var create = () => {
+    var v = newName.trim();
+    if (!v) return;
+    if (floats.some((m) => m.name.trim().toLocaleLowerCase(lang) === v.toLocaleLowerCase(lang))) { setErr(t.floatDup); return; }
+    var id = fId("f");
+    setFloats((list) => [...list, { id, name: v, sizes: [] }]);
+    setNewName(""); setErr(""); setAdding(false); setOpenId(id);
+  };
+  var update = (nm) => setFloats((list) => list.map((m) => m.id === nm.id ? nm : m));
+  var remove = (m) => { if (window.confirm(t.confirmDelFloat(m.name))) { setFloats((list) => list.filter((x) => x.id !== m.id)); setOpenId(null); } };
+  return (
+    <div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10, marginBottom: 12 }}>
+        <div style={{ fontSize: 12, color: h.muted, lineHeight: 1.5 }}>{t.realHint}</div>
+        <button onClick={() => { setAdding((v) => !v); setErr(""); }} style={{ ...ql, background: h.accent, color: h.onAccent, border: "none", flexShrink: 0 }}>{t.newFloat}</button>
+      </div>
+      {adding && (
+        <div style={{ background: h.deep, border: `1px solid ${h.line2}`, borderRadius: 6, padding: 12, marginBottom: 12 }}>
+          <label style={{ display: "block", marginBottom: 8 }}>
+            <div style={{ fontSize: 12, color: h.muted, fontWeight: 500, marginBottom: 4 }}>{t.floatNameLbl}</div>
+            <input value={newName} autoFocus placeholder={t.floatNamePh} onChange={(ev) => { setNewName(ev.target.value); setErr(""); }} onKeyDown={(ev) => ev.key === "Enter" && create()} style={Nl({ background: h.surface })} />
+          </label>
+          {err && <div style={{ fontSize: 12, color: h.bad, fontWeight: 700, marginBottom: 8 }}>{err}</div>}
+          <div style={{ display: "flex", gap: 8 }}>
+            <button onClick={create} style={{ ...ql, background: h.ok, color: h.onAccent, border: "none" }}>{t.btnSave}</button>
+            <button onClick={() => { setAdding(false); setNewName(""); setErr(""); }} style={ql}>{t.cancel}</button>
+          </div>
+        </div>
+      )}
+      {floats.length === 0 && !adding && <div style={{ fontSize: 14, color: h.muted, lineHeight: 1.5 }}>{t.floatsEmpty}</div>}
+      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+        {fSortModels(floats, lang).map((m) => (
+          <FloatModel key={m.id} m={m} t={t} open={openId === m.id} onToggle={() => setOpenId((v) => v === m.id ? null : m.id)} onChange={update} onDelete={() => remove(m)} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function Pc() {
   var ps, vs;
   let [l, t] = (0, L.useState)(initialLang), e = Lm[l], [a, n] = (0, L.useState)(() => ph(gu("shots", null), sh)), [u, i] = (0, L.useState)("8"), [f, c] = (0, L.useState)("2.00"), [g, b] = (0, L.useState)("fixed"), [S, p] = (0, L.useState)("asc"), [y, z] = (0, L.useState)(null), [C, D] = (0, L.useState)("calc"), [d, r] = (0, L.useState)([]), [m, T] = (0, L.useState)(""), [O, _] = (0, L.useState)(() => String(gu("leader", "30"))), [M, U] = (0, L.useState)({ mode: "none", pct: "60", id: "" }), [N, X] = (0, L.useState)(null), [F, kl] = (0, L.useState)(null), [Ye, xl] = (0, L.useState)(null), [jl, zt] = (0, L.useState)([]), [v, H] = (0, L.useState)(""), [Q, ul] = (0, L.useState)(false), [il, Dt] = (0, L.useState)(() => ph(gu("torpedoes", null), dh)), [Wl, ct] = (0, L.useState)(() => {
     let s = gu("presets", []);
     return Array.isArray(s) ? s : [];
   }), [ua, ls] = (0, L.useState)(false);
+  let [flt, setFlt] = (0, L.useState)(() => { let s = gu("floats", []); return Array.isArray(s) ? s : []; }), [fSel, setFSel] = (0, L.useState)("");
+  (0, L.useEffect)(() => { mu("floats", flt); }, [flt]);
+  let fPick = (() => { if (!fSel) return null; let [mi, si] = fSel.split("|"), m0 = flt.find((x) => x.id === mi), z0 = m0 && (m0.sizes || []).find((x) => x.id === si); return m0 && z0 && fLoad(z0) != null ? { label: fLabel(m0, z0), load: fLoad(z0) } : null; })();
+  let fRef = (0, L.useRef)("");
+  (0, L.useEffect)(() => { if (fSel && !fPick) { setFSel(""); return; } let [p0, q0] = fRef.current.split(":"); fPick && p0 === fSel && q0 !== String(fPick.load) && c(fPick.load.toFixed(2)); fRef.current = fPick ? `${fSel}:${fPick.load}` : ""; }, [fSel, fPick ? fPick.load : null]);
+  let pickFloat = (v) => { setFSel(v); let [mi, si] = v.split("|"), m0 = flt.find((x) => x.id === mi), z0 = m0 && (m0.sizes || []).find((x) => x.id === si), g0 = z0 && fLoad(z0); g0 != null && c(g0.toFixed(2)); };
+  let goFloats = () => { X("floats"); setTimeout(() => { let el0 = document.getElementById("inv-floats"); el0 && el0.scrollIntoView({ behavior: "smooth", block: "center" }); }, 60); };
   (0, L.useEffect)(() => {
     mu("presets", Wl);
   }, [Wl]), (0, L.useEffect)(() => {
@@ -941,11 +1162,11 @@ function Pc() {
     r(s === "float" ? (B) => [...B, A] : (B) => [A, ...B]);
   }, Dh = (s) => r((x) => x.filter((A) => A.id !== s)), Et = (s, x, A) => r((B) => B.map((w) => w.id === s ? { ...w, [x]: A } : w)), us = () => {
     if (!lo.trim()) return;
-    let s = { id: Date.now(), name: lo.trim(), grams: f, count: u, groupSize: g, direction: S, spacingRows: d.map((x) => ({ ...x })), floatCm: m, leaderCm: O, torp: M, placements: F, plSig: y ? y.items.map((x) => x.code).join("|") : "", createdAt: (/* @__PURE__ */ new Date()).toLocaleDateString() };
+    let s = { id: Date.now(), name: lo.trim(), grams: f, count: u, groupSize: g, direction: S, spacingRows: d.map((x) => ({ ...x })), floatCm: m, leaderCm: O, torp: M, placements: F, plSig: y ? y.items.map((x) => x.code).join("|") : "", createdAt: (/* @__PURE__ */ new Date()).toLocaleDateString(), floatSel: fPick ? fSel : "", floatName: fPick ? fPick.label : "" };
     ct((x) => [s, ...x.filter((A) => A.name !== s.name)]), ts(""), to(false), as(`${e.toastSaved}: "${s.name}"`);
   }, _h = (s) => {
     var x;
-    i(s.count), c(s.grams), b(s.groupSize), p(s.direction), r(s.spacingRows.map((A) => ({ ...A, id: Date.now() + Math.random() }))), T(s.floatCm || ""), _((x = s.leaderCm) != null ? x : "30"), U(s.torp || { mode: "none", pct: "60", id: "" }), xl(s.placements ? { sig: s.plSig, pl: s.placements } : null), z(null), ls(true), eo(false), as(`${e.toastLoaded}: "${s.name}"`);
+    i(s.count), c(s.grams), setFSel(s.floatSel || ""), b(s.groupSize), p(s.direction), r(s.spacingRows.map((A) => ({ ...A, id: Date.now() + Math.random() }))), T(s.floatCm || ""), _((x = s.leaderCm) != null ? x : "30"), U(s.torp || { mode: "none", pct: "60", id: "" }), xl(s.placements ? { sig: s.plSig, pl: s.placements } : null), z(null), ls(true), eo(false), as(`${e.toastLoaded}: "${s.name}"`);
   }, Hh = (s) => ct((x) => x.filter((A) => A.id !== s)), Bh = y ? Rc([...y.items.filter((s) => !s.isTorpedo)].reverse()) : [], ia = (0, L.useMemo)(() => y ? [...y.items.filter((s) => !s.isTorpedo)].reverse().map((s, x) => ({ ...s, key: `s${x}` })) : [], [y]), no = y && y.items.find((s) => s.isTorpedo) || null, oa = (0, L.useMemo)(() => no ? { ...no, key: "torp" } : null, [no]), is = y ? y.items.map((s) => s.code).join("|") : "";
   (0, L.useEffect)(() => {
     Ye && Ye.sig === is && Array.isArray(Ye.pl) ? (kl(Ye.pl), xl(null)) : kl([]), zt([]);
@@ -1042,13 +1263,13 @@ function Pc() {
     eo((s) => !s), to(false);
   }, style: { ...ql, width: 36, minHeight: 36, padding: 0, borderColor: h.goldBrand, color: bu ? "#fff" : h.goldBrand, background: bu ? "rgba(212,175,55,0.25)" : "transparent", display: "flex", alignItems: "center", justifyContent: "center" } }, o.default.createElement(nn, { d: un.folder, size: 18 })), o.default.createElement("button", { "aria-label": e.save, onClick: () => {
     to((s) => !s), eo(false);
-  }, style: { ...ql, width: 36, minHeight: 36, padding: 0, borderColor: h.goldBrand, color: vu ? "#fff" : h.goldBrand, background: vu ? "rgba(212,175,55,0.25)" : "transparent", display: "flex", alignItems: "center", justifyContent: "center" } }, o.default.createElement(nn, { d: un.save, size: 18 })))), (vu || bu) && o.default.createElement("div", { style: { height: 12 } }), vu && o.default.createElement("div", { style: { maxWidth: 560, margin: "0 auto", padding: "0 16px 14px", display: "flex", gap: 8, alignItems: "flex-end" } }, o.default.createElement("label", { style: { flex: 1 } }, o.default.createElement(el, null, e.saveTitle), o.default.createElement("input", { value: lo, onChange: (s) => ts(s.target.value), onKeyDown: (s) => s.key === "Enter" && us(), placeholder: e.savePlaceholder, style: Nl() })), o.default.createElement("button", { onClick: us, style: { ...ql, minHeight: 44, background: h.accent, color: h.onAccent, border: "none" } }, e.btnSaveOk)), bu && o.default.createElement("div", { style: { maxWidth: 560, margin: "0 auto", padding: "0 16px 14px", maxHeight: 300, overflowY: "auto" } }, o.default.createElement(el, null, e.loadTitle, " (", Wl.length, ")"), Wl.length === 0 && o.default.createElement("div", { style: { fontSize: 14, color: h.muted, lineHeight: 1.5 } }, e.noPresets), Wl.map((s) => o.default.createElement("div", { key: s.id, style: { display: "flex", alignItems: "center", gap: 8, background: h.surface, border: `1px solid ${h.line}`, borderRadius: 6, padding: "10px 10px 10px 14px", marginBottom: 6 } }, o.default.createElement("div", { style: { flex: 1, minWidth: 0 } }, o.default.createElement("div", { style: { fontWeight: 700, fontSize: 15 } }, s.name), o.default.createElement("div", { style: { fontSize: 12, color: h.muted } }, s.count, " ", e.pcsOf, ", ", s.grams, " ", e.grUnit)), o.default.createElement("button", { onClick: () => _h(s), style: { ...ql, background: h.accent, color: h.onAccent, border: "none" } }, e.btnLoad), o.default.createElement("button", { onClick: () => Hh(s.id), style: Ic, "aria-label": `${e.del} ${s.name}` }, o.default.createElement(nn, { d: un.x, size: 16 })))))), o.default.createElement("main", { style: { maxWidth: 560, margin: "0 auto", padding: "16px 16px 0" } }, C === "calc" && o.default.createElement("div", null, o.default.createElement(Le, null, o.default.createElement("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 } }, o.default.createElement(yu, { label: e.labelCount, mb: 12 }, o.default.createElement(gh, { type: "number", min: 1, max: 40, value: u, onChange: i, "aria-label": e.labelCount, placeholder: "8", clearLabel: e.clear })), o.default.createElement(yu, { label: e.labelTarget, mb: 12 }, o.default.createElement(gh, { type: "number", step: "0.01", value: f, onChange: c, "aria-label": e.labelTarget, placeholder: "2.00", clearLabel: e.clear }))), o.default.createElement(yu, { label: e.labelGroup, mb: 12 }, o.default.createElement("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 } }, o.default.createElement("button", { onClick: () => b("fixed"), style: en(g === "fixed") }, o.default.createElement("div", null, e.labelFixed), o.default.createElement("div", { style: { fontSize: 11, fontWeight: 500, opacity: 0.8, marginTop: 1 } }, e.fixedDesc)), o.default.createElement("button", { onClick: () => {
+  }, style: { ...ql, width: 36, minHeight: 36, padding: 0, borderColor: h.goldBrand, color: vu ? "#fff" : h.goldBrand, background: vu ? "rgba(212,175,55,0.25)" : "transparent", display: "flex", alignItems: "center", justifyContent: "center" } }, o.default.createElement(nn, { d: un.save, size: 18 })))), (vu || bu) && o.default.createElement("div", { style: { height: 12 } }), vu && o.default.createElement("div", { style: { maxWidth: 560, margin: "0 auto", padding: "0 16px 14px", display: "flex", gap: 8, alignItems: "flex-end" } }, o.default.createElement("label", { style: { flex: 1 } }, o.default.createElement(el, null, e.saveTitle), o.default.createElement("input", { value: lo, onChange: (s) => ts(s.target.value), onKeyDown: (s) => s.key === "Enter" && us(), placeholder: e.savePlaceholder, style: Nl() })), o.default.createElement("button", { onClick: us, style: { ...ql, minHeight: 44, background: h.accent, color: h.onAccent, border: "none" } }, e.btnSaveOk)), bu && o.default.createElement("div", { style: { maxWidth: 560, margin: "0 auto", padding: "0 16px 14px", maxHeight: 300, overflowY: "auto" } }, o.default.createElement(el, null, e.loadTitle, " (", Wl.length, ")"), Wl.length === 0 && o.default.createElement("div", { style: { fontSize: 14, color: h.muted, lineHeight: 1.5 } }, e.noPresets), Wl.map((s) => o.default.createElement("div", { key: s.id, style: { display: "flex", alignItems: "center", gap: 8, background: h.surface, border: `1px solid ${h.line}`, borderRadius: 6, padding: "10px 10px 10px 14px", marginBottom: 6 } }, o.default.createElement("div", { style: { flex: 1, minWidth: 0 } }, o.default.createElement("div", { style: { fontWeight: 700, fontSize: 15 } }, s.name), o.default.createElement("div", { style: { fontSize: 12, color: h.muted } }, s.count, " ", e.pcsOf, ", ", s.grams, " ", e.grUnit, s.floatName ? ` · ${s.floatName}` : "")), o.default.createElement("button", { onClick: () => _h(s), style: { ...ql, background: h.accent, color: h.onAccent, border: "none" } }, e.btnLoad), o.default.createElement("button", { onClick: () => Hh(s.id), style: Ic, "aria-label": `${e.del} ${s.name}` }, o.default.createElement(nn, { d: un.x, size: 16 })))))), o.default.createElement("main", { style: { maxWidth: 560, margin: "0 auto", padding: "16px 16px 0" } }, C === "calc" && o.default.createElement("div", null, o.default.createElement(Le, null, React.createElement(FloatPick, { floats: flt, value: fPick ? fSel : "", onPick: pickFloat, onGo: goFloats, t: e, lang: l }), o.default.createElement("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 } }, o.default.createElement(yu, { label: e.labelCount, mb: 12 }, o.default.createElement(gh, { type: "number", min: 1, max: 40, value: u, onChange: i, "aria-label": e.labelCount, placeholder: "8", clearLabel: e.clear })), o.default.createElement(yu, { label: e.labelTarget, mb: 12 }, o.default.createElement(gh, { type: "number", step: "0.01", value: f, onChange: c, "aria-label": e.labelTarget, placeholder: "2.00", clearLabel: e.clear }))), o.default.createElement(yu, { label: e.labelGroup, mb: 12 }, o.default.createElement("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 } }, o.default.createElement("button", { onClick: () => b("fixed"), style: en(g === "fixed") }, o.default.createElement("div", null, e.labelFixed), o.default.createElement("div", { style: { fontSize: 11, fontWeight: 500, opacity: 0.8, marginTop: 1 } }, e.fixedDesc)), o.default.createElement("button", { onClick: () => {
     g === "fixed" && b(1);
   }, style: en(g !== "fixed") }, o.default.createElement("div", null, e.labelVar), o.default.createElement("div", { style: { fontSize: 11, fontWeight: 500, opacity: 0.8, marginTop: 1 } }, e.varDesc)))), g !== "fixed" && o.default.createElement(o.default.Fragment, null, o.default.createElement(yu, { label: e.labelVarPer, mb: 12 }, o.default.createElement("div", { style: { display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6 } }, [1, 2, 3, 4].map((s) => o.default.createElement("button", { key: s, onClick: () => b(s), style: { ...en(g === s), textAlign: "center", fontFamily: xt, fontSize: 17 } }, s))))), o.default.createElement(yu, { label: e.torpTitle, mb: 14 }, o.default.createElement("div", { style: { display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 6 } }, [["none", e.torpNone], ["auto", e.torpAuto], ["list", e.torpList]].map(([s, x]) => o.default.createElement("button", { key: s, onClick: () => U((A) => ({ ...A, mode: s })), style: { ...en(M.mode === s, h.torp), textAlign: "center", fontSize: 13 } }, x))), M.mode === "auto" && o.default.createElement("div", { style: { display: "flex", alignItems: "center", gap: 10, marginTop: 8 } }, o.default.createElement("input", { type: "number", min: 10, max: 90, step: 5, value: M.pct, onChange: (s) => U((x) => ({ ...x, pct: s.target.value })), onFocus: (s) => s.target.select(), "aria-label": e.torpPct, style: Nl({ width: 80, textAlign: "center" }) }), o.default.createElement("span", { style: { fontSize: 13, color: h.muted } }, "% ", e.targetLabel.toLowerCase()), Rl && o.default.createElement("span", { style: { marginLeft: "auto", fontSize: 13, fontWeight: 700, color: h.torp, whiteSpace: "nowrap" } }, Rl.code, " · ", Rl.grams.toFixed(2), " ", e.grUnit)), M.mode === "list" && o.default.createElement("select", { value: M.id, onChange: (s) => U((x) => ({ ...x, id: s.target.value })), "aria-label": e.selectTorp, style: Nl({ marginTop: 8 }) }, o.default.createElement("option", { value: "" }, e.selectTorp), [...il].sort((s, x) => s.grams - x.grams).map((s) => o.default.createElement("option", { key: s.id, value: s.id }, s.code, " (", s.grams.toFixed(2), " ", e.grUnit, ")")))), o.default.createElement("div", { style: { display: "flex", gap: 8 } }, o.default.createElement("button", { "aria-label": e.clear, onClick: () => {
     i(""), c(""), z(null);
   }, style: { ...ql, minHeight: 44, width: 44, padding: 0, fontSize: 16 } }, "↺"), o.default.createElement("button", { onClick: fn, disabled: fs, style: an(fs) }, e.btnCalc)), o.default.createElement("div", { style: { display: "flex", justifyContent: "flex-end", marginTop: 10 } }, o.default.createElement("button", { onClick: () => {
-    i("8"), c("2.00"), b("fixed"), p("asc"), z(null);
-  }, style: ql }, e.btnReset))), React.createElement(ManualPicker, { shots: a, torpedo: Rl, target: $l, direction: S, t: e, onApply: (r0) => { z(r0); as(e.manualApplied); } }), y && o.default.createElement(o.default.Fragment, null, o.default.createElement(Le, { style: { borderColor: y.success ? `${h.ok}88` : `${h.bad}88` } }, o.default.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 12, gap: 10 } }, o.default.createElement("div", null, o.default.createElement(el, { mb: 2 }, e.resultLabel), o.default.createElement("div", { style: { fontFamily: xt, fontSize: 32, fontWeight: 800, lineHeight: 1, color: y.success ? h.ok : h.bad } }, y.total.toFixed(3), o.default.createElement("span", { style: { fontSize: 18, marginLeft: 4 } }, e.grUnit))), o.default.createElement("div", { style: { textAlign: "right" } }, o.default.createElement(el, { mb: 2 }, e.targetLabel), o.default.createElement("div", { style: { fontFamily: xt, fontSize: 22, fontWeight: 700 } }, $l.toFixed(3), " ", e.grUnit), o.default.createElement("div", { style: { fontSize: 13, fontWeight: 700, color: y.success ? h.ok : h.bad } }, y.success ? e.inRange : e.outRange))), o.default.createElement("div", { style: { height: 8, background: h.line, borderRadius: 4, marginBottom: 16, overflow: "hidden" } }, o.default.createElement("div", { style: { height: "100%", width: `${Math.min(100, y.total / $l * 100)}%`, background: y.success ? h.ok : h.bad, borderRadius: 4, transition: "width 0.5s" } })), g !== "fixed" && y.exact === false && o.default.createElement("div", { style: { fontSize: 13, lineHeight: 1.5, color: h.text, background: `${h.shot}1F`, border: `1px solid ${h.shot}66`, borderRadius: 5, padding: "10px 12px", marginBottom: 14 } }, e.relaxedNote(on, g, y.sizesUsed)), o.default.createElement(el, null, e.composition), o.default.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 6 } }, y.items && y.items.filter((s) => s.isTorpedo).map((s, x) => o.default.createElement("div", { key: `t${x}`, style: { display: "flex", alignItems: "center", justifyContent: "space-between", background: h.deep, borderRadius: 5, padding: "10px 14px", boxShadow: `inset 3px 0 0 ${h.torp}` } }, o.default.createElement("div", null, o.default.createElement("div", { style: { fontWeight: 800, fontSize: 15, color: h.torp } }, s.code), o.default.createElement("div", { style: { fontSize: 12, color: h.muted, marginTop: 2 } }, e.torpedo)), o.default.createElement("div", { style: { fontFamily: xt, fontSize: 20, fontWeight: 700 } }, s.grams.toFixed(2), " ", e.grUnit))), Bh.map(({ shot: s, cnt: x }, A) => o.default.createElement("div", { key: A, style: { display: "flex", alignItems: "center", justifyContent: "space-between", background: h.deep, borderRadius: 5, padding: "10px 14px" } }, o.default.createElement("div", null, o.default.createElement("div", { style: { fontWeight: 800, fontSize: 15 } }, x, " × ", s.code), o.default.createElement("div", { style: { fontSize: 12, color: h.muted, marginTop: 2 } }, s.grams.toFixed(3), " ", e.perPiece)), o.default.createElement("div", { style: { fontFamily: xt, fontSize: 20, fontWeight: 700 } }, (s.grams * x).toFixed(3), " ", e.grUnit)))), o.default.createElement("div", { style: { display: "flex", marginTop: 14 } }, o.default.createElement("button", { onClick: () => cn("spacing"), style: an(false) }, e.nextSpacing))), o.default.createElement("button", { onClick: () => z(null), style: { ...ql, width: "100%", minHeight: 44, fontSize: 14, marginBottom: 14 } }, e.btnReset2)), o.default.createElement(el, { mb: 8 }, e.inventory), [["shots", e.shotsTitle, a.length, hu.shots], ["torpedoes", e.torpedoTitle, il.length, hu.torp]].map(([s, x, A, B]) => o.default.createElement(Le, { key: s, style: { padding: 0, overflow: "hidden" } }, o.default.createElement("button", { onClick: () => X((w) => w === s ? null : s), "aria-expanded": N === s, style: { width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", background: "transparent", border: "none", cursor: "pointer", fontFamily: Ot, color: h.text, textAlign: "left" } }, B, o.default.createElement("span", { style: { flex: 1, fontSize: 15, fontWeight: 700 } }, x, " ", o.default.createElement("span", { style: { color: h.muted, fontWeight: 500 } }, "(", A, ")")), o.default.createElement("span", { "aria-hidden": "true", style: { color: h.muted, fontSize: 16, transform: N === s ? "rotate(180deg)" : "none", transition: "transform .15s" } }, "▾")), N === s && o.default.createElement("div", { style: { padding: "0 14px 14px", borderTop: `1px solid ${h.line}` } }, o.default.createElement("div", { style: { height: 12 } }), s === "shots" ? o.default.createElement(mh, { noCard: true, title: e.shotsTitle, items: a, sortFn: (w, Y) => Y.grams - w.grams, decimals: 3, onReset: () => n(sh), onRemove: Ah, onAdd: Eh, codePh: "No 5", gramsPh: "0.000", step: "0.001", t: e, marker: o.default.createElement("span", { style: { width: 14, height: 14, borderRadius: "50%", background: h.shot, flexShrink: 0 } }) }) : o.default.createElement(mh, { noCard: true, title: e.torpedoTitle, items: il, sortFn: (w, Y) => w.grams - Y.grams, decimals: 2, onReset: () => Dt(dh), onRemove: Ch, onAdd: Mh, codePh: "TOJ0xxx", gramsPh: "0.00", step: "0.01", t: e, marker: o.default.createElement("span", { style: { width: 9, height: 17, borderRadius: "50%", background: h.torp, flexShrink: 0 } }) }))))), C === "spacing" && o.default.createElement(o.default.Fragment, null, o.default.createElement(Le, null, o.default.createElement("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 14 } }, o.default.createElement("label", null, o.default.createElement(el, null, e.leaderLbl), o.default.createElement("input", { type: "number", min: 0, step: 1, value: O, placeholder: "0", onChange: (s) => _(s.target.value), onFocus: (s) => s.target.select(), style: Nl() })), o.default.createElement("div", null, o.default.createElement(el, null, e.rigLenLbl), o.default.createElement("div", { style: { ...Nl(), display: "flex", alignItems: "center", background: h.raised, color: h.navy } }, y ? `${Il((ps = st.rigTop) != null ? ps : 0)} cm` : "—"))), y ? o.default.createElement(o.default.Fragment, null, o.default.createElement("div", { style: { fontSize: 13, lineHeight: 1.5, padding: "8px 10px", borderRadius: 5, marginBottom: 12, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", background: F ? ue === zl ? `${h.ok}14` : `${h.shot}14` : h.deep, border: `1px solid ${F ? ue === zl ? `${h.ok}66` : `${h.shot}66` : h.line}`, color: F && ue === zl ? h.ok : h.text, fontWeight: F && ue === zl ? 700 : 400 } }, o.default.createElement("span", { style: { flex: 1, minWidth: 180 } }, ue === 0 ? e.startHint : e.manualMode(ue, zl)), Array.isArray(F) && F.length > 0 && o.default.createElement("button", { onClick: () => {
+    i("8"), c("2.00"), b("fixed"), p("asc"), z(null), setFSel("");
+  }, style: ql }, e.btnReset))), React.createElement(ManualPicker, { shots: a, torpedo: Rl, target: $l, direction: S, t: e, onApply: (r0) => { z(r0); as(e.manualApplied); } }), y && o.default.createElement(o.default.Fragment, null, o.default.createElement(Le, { style: { borderColor: y.success ? `${h.ok}88` : `${h.bad}88` } }, o.default.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 12, gap: 10 } }, o.default.createElement("div", null, o.default.createElement(el, { mb: 2 }, e.resultLabel), o.default.createElement("div", { style: { fontFamily: xt, fontSize: 32, fontWeight: 800, lineHeight: 1, color: y.success ? h.ok : h.bad } }, y.total.toFixed(3), o.default.createElement("span", { style: { fontSize: 18, marginLeft: 4 } }, e.grUnit))), o.default.createElement("div", { style: { textAlign: "right" } }, o.default.createElement(el, { mb: 2 }, e.targetLabel), o.default.createElement("div", { style: { fontFamily: xt, fontSize: 22, fontWeight: 700 } }, $l.toFixed(3), " ", e.grUnit), o.default.createElement("div", { style: { fontSize: 13, fontWeight: 700, color: y.success ? h.ok : h.bad } }, y.success ? e.inRange : e.outRange))), o.default.createElement("div", { style: { height: 8, background: h.line, borderRadius: 4, marginBottom: 16, overflow: "hidden" } }, o.default.createElement("div", { style: { height: "100%", width: `${Math.min(100, y.total / $l * 100)}%`, background: y.success ? h.ok : h.bad, borderRadius: 4, transition: "width 0.5s" } })), g !== "fixed" && y.exact === false && o.default.createElement("div", { style: { fontSize: 13, lineHeight: 1.5, color: h.text, background: `${h.shot}1F`, border: `1px solid ${h.shot}66`, borderRadius: 5, padding: "10px 12px", marginBottom: 14 } }, e.relaxedNote(on, g, y.sizesUsed)), o.default.createElement(el, null, e.composition), o.default.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 6 } }, y.items && y.items.filter((s) => s.isTorpedo).map((s, x) => o.default.createElement("div", { key: `t${x}`, style: { display: "flex", alignItems: "center", justifyContent: "space-between", background: h.deep, borderRadius: 5, padding: "10px 14px", boxShadow: `inset 3px 0 0 ${h.torp}` } }, o.default.createElement("div", null, o.default.createElement("div", { style: { fontWeight: 800, fontSize: 15, color: h.torp } }, s.code), o.default.createElement("div", { style: { fontSize: 12, color: h.muted, marginTop: 2 } }, e.torpedo)), o.default.createElement("div", { style: { fontFamily: xt, fontSize: 20, fontWeight: 700 } }, s.grams.toFixed(2), " ", e.grUnit))), Bh.map(({ shot: s, cnt: x }, A) => o.default.createElement("div", { key: A, style: { display: "flex", alignItems: "center", justifyContent: "space-between", background: h.deep, borderRadius: 5, padding: "10px 14px" } }, o.default.createElement("div", null, o.default.createElement("div", { style: { fontWeight: 800, fontSize: 15 } }, x, " × ", s.code), o.default.createElement("div", { style: { fontSize: 12, color: h.muted, marginTop: 2 } }, s.grams.toFixed(3), " ", e.perPiece)), o.default.createElement("div", { style: { fontFamily: xt, fontSize: 20, fontWeight: 700 } }, (s.grams * x).toFixed(3), " ", e.grUnit)))), o.default.createElement("div", { style: { display: "flex", marginTop: 14 } }, o.default.createElement("button", { onClick: () => cn("spacing"), style: an(false) }, e.nextSpacing))), o.default.createElement("button", { onClick: () => z(null), style: { ...ql, width: "100%", minHeight: 44, fontSize: 14, marginBottom: 14 } }, e.btnReset2)), o.default.createElement(el, { mb: 8 }, e.inventory), [["shots", e.shotsTitle, a.length, hu.shots], ["torpedoes", e.torpedoTitle, il.length, hu.torp], ["floats", e.floatsTitle, flt.length, FloatIcon]].map(([s, x, A, B]) => o.default.createElement(Le, { key: s, style: { padding: 0, overflow: "hidden" } }, o.default.createElement("button", { id: "inv-" + s, onClick: () => X((w) => w === s ? null : s), "aria-expanded": N === s, style: { width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", background: "transparent", border: "none", cursor: "pointer", fontFamily: Ot, color: h.text, textAlign: "left" } }, B, o.default.createElement("span", { style: { flex: 1, fontSize: 15, fontWeight: 700 } }, x, " ", o.default.createElement("span", { style: { color: h.muted, fontWeight: 500 } }, "(", A, ")")), o.default.createElement("span", { "aria-hidden": "true", style: { color: h.muted, fontSize: 16, transform: N === s ? "rotate(180deg)" : "none", transition: "transform .15s" } }, "▾")), N === s && o.default.createElement("div", { style: { padding: "0 14px 14px", borderTop: `1px solid ${h.line}` } }, o.default.createElement("div", { style: { height: 12 } }), s === "floats" ? React.createElement(FloatList, { floats: flt, setFloats: setFlt, t: e, lang: l }) : s === "shots" ? o.default.createElement(mh, { noCard: true, title: e.shotsTitle, items: a, sortFn: (w, Y) => Y.grams - w.grams, decimals: 3, onReset: () => n(sh), onRemove: Ah, onAdd: Eh, codePh: "No 5", gramsPh: "0.000", step: "0.001", t: e, marker: o.default.createElement("span", { style: { width: 14, height: 14, borderRadius: "50%", background: h.shot, flexShrink: 0 } }) }) : o.default.createElement(mh, { noCard: true, title: e.torpedoTitle, items: il, sortFn: (w, Y) => w.grams - Y.grams, decimals: 2, onReset: () => Dt(dh), onRemove: Ch, onAdd: Mh, codePh: "TOJ0xxx", gramsPh: "0.00", step: "0.01", t: e, marker: o.default.createElement("span", { style: { width: 9, height: 17, borderRadius: "50%", background: h.torp, flexShrink: 0 } }) }))))), C === "spacing" && o.default.createElement(o.default.Fragment, null, o.default.createElement(Le, null, o.default.createElement("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 14 } }, o.default.createElement("label", null, o.default.createElement(el, null, e.leaderLbl), o.default.createElement("input", { type: "number", min: 0, step: 1, value: O, placeholder: "0", onChange: (s) => _(s.target.value), onFocus: (s) => s.target.select(), style: Nl() })), o.default.createElement("div", null, o.default.createElement(el, null, e.rigLenLbl), o.default.createElement("div", { style: { ...Nl(), display: "flex", alignItems: "center", background: h.raised, color: h.navy } }, y ? `${Il((ps = st.rigTop) != null ? ps : 0)} cm` : "—"))), y ? o.default.createElement(o.default.Fragment, null, o.default.createElement("div", { style: { fontSize: 13, lineHeight: 1.5, padding: "8px 10px", borderRadius: 5, marginBottom: 12, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", background: F ? ue === zl ? `${h.ok}14` : `${h.shot}14` : h.deep, border: `1px solid ${F ? ue === zl ? `${h.ok}66` : `${h.shot}66` : h.line}`, color: F && ue === zl ? h.ok : h.text, fontWeight: F && ue === zl ? 700 : 400 } }, o.default.createElement("span", { style: { flex: 1, minWidth: 180 } }, ue === 0 ? e.startHint : e.manualMode(ue, zl)), Array.isArray(F) && F.length > 0 && o.default.createElement("button", { onClick: () => {
     kl([]), zt([]);
   }, style: { ...ql, minHeight: 32 } }, e.clearAll)), o.default.createElement("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 8 } }, o.default.createElement(el, { mb: 0 }, e.trayTitle)), o.default.createElement("div", { style: { display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 } }, [...ia, ...oa ? [oa] : []].map((s) => {
     let x = fo(s.key), A = jl.includes(s.key), B = s.key === "torp", w = B ? h.torp : x && x.rowType === "bulk" ? h.bulk : h.shot;
@@ -1056,7 +1277,7 @@ function Pc() {
   })), jl.length > 0 && (() => {
     let s = jl[0], x = sn(), A = x.findIndex((Y) => Y.key === s), B = A === 0 || A < 0 && x.length === 0, w = qh[0];
     return o.default.createElement("div", { style: { background: h.deep, border: `2px solid ${h.goldBrand}`, borderRadius: 6, padding: 12, marginBottom: 14 } }, o.default.createElement("div", { style: { fontSize: 15, fontWeight: 800, marginBottom: 8 } }, w ? `${w.code} · ${w.grams.toFixed(s === "torp" ? 2 : 3)} ${e.grUnit}` : "", A >= 0 && o.default.createElement("span", { style: { color: h.muted, fontWeight: 600 } }, " · #", A + 1)), o.default.createElement(el, null, B ? e.distLbl : e.gapPrevLbl), o.default.createElement("div", { style: { display: "flex", gap: 6, alignItems: "center", marginBottom: 6 } }, o.default.createElement("input", { type: "number", inputMode: "decimal", min: 0, step: 0.5, value: v, autoFocus: true, onChange: (Y) => H(Y.target.value), onFocus: (Y) => Y.target.select(), onKeyDown: (Y) => Y.key === "Enter" && hs(), style: Sh({ textAlign: "center", padding: "6px 10px", flex: 1 }) })), o.default.createElement("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 10, flexWrap: "wrap" } }, o.default.createElement("span", { style: { fontSize: 13, fontWeight: 700, color: h.navy } }, ys != null ? e.atCm(Il(ys)) : "")), !B && o.default.createElement("div", { style: { fontSize: 12, color: h.faint, marginBottom: 10 } }, e.touchHint), o.default.createElement("div", { style: { display: "flex", gap: 8 } }, o.default.createElement("button", { onClick: hs, style: an(false) }, e.place), fo(s) && o.default.createElement("button", { onClick: Lh, style: { ...ql, color: h.bad, borderColor: `${h.bad}66`, minHeight: 44 } }, e.removeLbl), o.default.createElement("button", { onClick: () => zt([]), style: { ...ql, minHeight: 44 } }, e.cancel)));
-  })(), ms.length > 0 && o.default.createElement("div", { style: { background: h.deep, borderRadius: 6, padding: 14, border: `1px solid ${h.line}` } }, o.default.createElement(el, { mb: 4 }, e.previewTitle.replace("στριφτάρι → φελλός", "φελλός → στριφτάρι").replace("swivel → float", "float → swivel")), o.default.createElement("div", { style: { fontSize: 12, color: h.faint, marginBottom: 8 } }, e.tapToEdit), o.default.createElement("div", { style: { display: "flex", alignItems: "center", gap: 10, marginBottom: 4 } }, o.default.createElement("div", { style: { width: 26, display: "flex", flexDirection: "column", alignItems: "center", flexShrink: 0 } }, o.default.createElement("div", { style: { width: 2, height: 12, background: "#F2551D" } }), o.default.createElement("div", { style: { width: 14, height: 22, borderRadius: "50% 50% 50% 50% / 62% 62% 38% 38%", background: "linear-gradient(160deg, #E9ECEF 0 50%, #1F2A33 50% 55%, #2E9BEF 55% 100%)", border: `1px solid ${h.line2}` } })), o.default.createElement("span", { style: { fontSize: 14, fontWeight: 700 } }, e.floatTop), o.default.createElement("span", { style: { marginLeft: "auto", fontSize: 13, color: h.muted } }, o.default.createElement("b", { style: { color: h.navy } }, $l.toFixed(2), " ", e.grUnit), " · +", vh, " cm")), ms.map((s, x) => {
+  })(), ms.length > 0 && o.default.createElement("div", { style: { background: h.deep, borderRadius: 6, padding: 14, border: `1px solid ${h.line}` } }, o.default.createElement(el, { mb: 4 }, e.previewTitle.replace("στριφτάρι → φελλός", "φελλός → στριφτάρι").replace("swivel → float", "float → swivel")), o.default.createElement("div", { style: { fontSize: 12, color: h.faint, marginBottom: 8 } }, e.tapToEdit), o.default.createElement("div", { style: { display: "flex", alignItems: "center", gap: 10, marginBottom: 4 } }, o.default.createElement("div", { style: { width: 26, display: "flex", flexDirection: "column", alignItems: "center", flexShrink: 0 } }, o.default.createElement("div", { style: { width: 2, height: 12, background: "#F2551D" } }), o.default.createElement("div", { style: { width: 14, height: 22, borderRadius: "50% 50% 50% 50% / 62% 62% 38% 38%", background: "linear-gradient(160deg, #E9ECEF 0 50%, #1F2A33 50% 55%, #2E9BEF 55% 100%)", border: `1px solid ${h.line2}` } })), o.default.createElement("span", { style: { fontSize: 14, fontWeight: 700 } }, fPick ? fPick.label : e.floatTop), o.default.createElement("span", { style: { marginLeft: "auto", fontSize: 13, color: h.muted } }, o.default.createElement("b", { style: { color: h.navy } }, $l.toFixed(2), " ", e.grUnit), " · +", vh, " cm")), ms.map((s, x) => {
     let A = s.kind === "bulk" ? h.bulk : s.kind === "torp" ? h.torp : h.shot, B = Su(s.items[0]), w = jl.includes(B);
     return o.default.createElement("button", { key: x, onClick: () => rs(B), style: { display: "flex", alignItems: "stretch", gap: 10, width: "100%", background: w ? `${h.goldBrand}22` : "transparent", border: "none", padding: 0, cursor: "pointer", fontFamily: Ot, color: h.text, textAlign: "left", borderRadius: 4 } }, o.default.createElement("div", { style: { width: 26, display: "flex", justifyContent: "center", flexShrink: 0 } }, o.default.createElement("div", { style: { width: 2, minHeight: 30, background: h.muted } })), o.default.createElement("div", { style: { flex: 1, display: "flex", alignItems: "center", gap: 8, padding: "4px 4px 4px 0", fontSize: 14, minWidth: 0 } }, o.default.createElement("span", { style: { width: s.kind === "torp" ? 7 : 11, height: s.kind === "torp" ? 13 : 11, borderRadius: "50%", background: A, flexShrink: 0 } }), o.default.createElement("span", { style: { fontWeight: 700, color: s.kind === "bulk" ? h.bulk : h.text, minWidth: 0 } }, s.kind === "bulk" ? o.default.createElement(o.default.Fragment, null, "Bulk: ", Rc([...s.items].sort((Y, R) => R.distFromHook - Y.distFromHook).map((Y) => Y.shot)).map((Y) => `${Y.cnt}× ${Y.shot.code}`).join(" + "), " ", o.default.createElement("span", { style: { fontWeight: 400, color: h.muted, fontSize: 13 } }, "· ", s.items.reduce((Y, R) => Y + R.shot.grams, 0).toFixed(3), " ", e.grUnit)) : o.default.createElement(o.default.Fragment, null, s.items[0].shot.code, " ", o.default.createElement("span", { style: { fontWeight: 400, color: h.muted, fontSize: 13 } }, "· ", s.items[0].shot.grams.toFixed(s.kind === "torp" ? 2 : 3), " ", e.grUnit))), o.default.createElement("span", { style: { marginLeft: "auto", whiteSpace: "nowrap", textAlign: "right" } }, Array.isArray(F) && (() => {
       let Y = F.find((R) => R.key === B);
@@ -1077,7 +1298,7 @@ function Pc() {
     })());
   })), d.length > 0 && o.default.createElement("div", { style: { display: "flex" } }, o.default.createElement("button", { onClick: () => {
     kl(ds(io)), zt([]);
-  }, style: an(false) }, e.applyRows))))), C === "rig" && (y ? o.default.createElement(Le, null, o.default.createElement("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 12 } }, o.default.createElement("div", { style: { background: h.deep, borderRadius: 5, padding: "8px 10px" } }, o.default.createElement(el, { mb: 2 }, e.weight), o.default.createElement("div", { style: { fontFamily: xt, fontSize: 20, fontWeight: 700, color: y.success ? h.ok : h.bad } }, y.total.toFixed(3), " ", o.default.createElement("span", { style: { fontSize: 13, color: h.muted } }, "/ ", $l.toFixed(2), " ", e.grUnit))), o.default.createElement("div", { style: { background: h.deep, borderRadius: 5, padding: "8px 10px" } }, o.default.createElement(el, { mb: 2 }, e.colPcs), o.default.createElement("div", { style: { fontFamily: xt, fontSize: 20, fontWeight: 700 } }, zl, Rl && y.items.some((s) => s.isTorpedo) && o.default.createElement("span", { style: { fontSize: 13, color: h.torp } }, " ", e.plusTorp))), o.default.createElement("div", { style: { background: h.deep, borderRadius: 5, padding: "8px 10px" } }, o.default.createElement(el, { mb: 2 }, e.rigLenLbl), o.default.createElement("div", { style: { fontFamily: xt, fontSize: 20, fontWeight: 700 } }, Il((vs = st.rigTop) != null ? vs : st.totalCm), " cm")), o.default.createElement("label", { style: { background: h.deep, borderRadius: 5, padding: "8px 10px", display: "block" } }, o.default.createElement(el, { mb: 2 }, e.leaderLbl), o.default.createElement("input", { type: "number", min: 0, step: 1, value: O, onChange: (s) => _(s.target.value), onFocus: (s) => s.target.select(), style: Nl({ minHeight: 32, padding: "2px 8px", fontFamily: xt, fontSize: 18 }) }))), st.positions.length === 0 && o.default.createElement("div", { style: { fontSize: 14, lineHeight: 1.5, marginBottom: 10 } }, e.rigEmpty, " ", o.default.createElement("button", { onClick: () => cn("spacing"), style: { ...ql, minHeight: 32, marginLeft: 6 } }, e.goSpacing)), st.positions.length > 0 && ue < zl && o.default.createElement("div", { style: { fontSize: 13, lineHeight: 1.5, background: `${h.shot}14`, border: `1px solid ${h.shot}66`, borderRadius: 5, padding: "8px 10px", marginBottom: 10 } }, e.unplacedWarn(zl - ue)), o.default.createElement(Vm, { positions: st.positions, totalCm: st.totalCm, floatSet: st.floatSet, leaderCm: parseFloat(O) || 0, floatGrams: $l, rigLen: st.rigTop, t: e })) : o.default.createElement(Le, null, o.default.createElement("div", { style: { fontSize: 15, lineHeight: 1.5, marginBottom: 14 } }, e.noResult), o.default.createElement("div", { style: { display: "flex" } }, o.default.createElement("button", { onClick: () => cn("calc"), style: an(false) }, e.goCalc)))), C === "log" && React.createElement(FishingLog, { lang: l, presets: Wl, toast: as, current: y ? { floatG: f, desc: [...Bh.map((g0) => `${g0.cnt}× ${g0.shot.code}`), ...(Rl ? [Rl.code] : [])].join(" + ") } : null })), o.default.createElement("nav", { style: { position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 60, background: h.bg, borderTop: `1px solid ${h.line}`, paddingBottom: "env(safe-area-inset-bottom, 0px)" } }, o.default.createElement("div", { style: { maxWidth: 560, margin: "0 auto", padding: "6px 10px 8px", display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 4 } }, Uh.map((s) => {
+  }, style: an(false) }, e.applyRows))))), C === "rig" && (y ? o.default.createElement(Le, null, o.default.createElement("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 12 } }, o.default.createElement("div", { style: { background: h.deep, borderRadius: 5, padding: "8px 10px" } }, o.default.createElement(el, { mb: 2 }, e.weight), o.default.createElement("div", { style: { fontFamily: xt, fontSize: 20, fontWeight: 700, color: y.success ? h.ok : h.bad } }, y.total.toFixed(3), " ", o.default.createElement("span", { style: { fontSize: 13, color: h.muted } }, "/ ", $l.toFixed(2), " ", e.grUnit))), o.default.createElement("div", { style: { background: h.deep, borderRadius: 5, padding: "8px 10px" } }, o.default.createElement(el, { mb: 2 }, e.colPcs), o.default.createElement("div", { style: { fontFamily: xt, fontSize: 20, fontWeight: 700 } }, zl, Rl && y.items.some((s) => s.isTorpedo) && o.default.createElement("span", { style: { fontSize: 13, color: h.torp } }, " ", e.plusTorp))), o.default.createElement("div", { style: { background: h.deep, borderRadius: 5, padding: "8px 10px" } }, o.default.createElement(el, { mb: 2 }, e.rigLenLbl), o.default.createElement("div", { style: { fontFamily: xt, fontSize: 20, fontWeight: 700 } }, Il((vs = st.rigTop) != null ? vs : st.totalCm), " cm")), o.default.createElement("label", { style: { background: h.deep, borderRadius: 5, padding: "8px 10px", display: "block" } }, o.default.createElement(el, { mb: 2 }, e.leaderLbl), o.default.createElement("input", { type: "number", min: 0, step: 1, value: O, onChange: (s) => _(s.target.value), onFocus: (s) => s.target.select(), style: Nl({ minHeight: 32, padding: "2px 8px", fontFamily: xt, fontSize: 18 }) }))), st.positions.length === 0 && o.default.createElement("div", { style: { fontSize: 14, lineHeight: 1.5, marginBottom: 10 } }, e.rigEmpty, " ", o.default.createElement("button", { onClick: () => cn("spacing"), style: { ...ql, minHeight: 32, marginLeft: 6 } }, e.goSpacing)), st.positions.length > 0 && ue < zl && o.default.createElement("div", { style: { fontSize: 13, lineHeight: 1.5, background: `${h.shot}14`, border: `1px solid ${h.shot}66`, borderRadius: 5, padding: "8px 10px", marginBottom: 10 } }, e.unplacedWarn(zl - ue)), o.default.createElement(Vm, { positions: st.positions, totalCm: st.totalCm, floatSet: st.floatSet, leaderCm: parseFloat(O) || 0, floatGrams: $l, rigLen: st.rigTop, t: e, floatName: fPick ? fPick.label : "" })) : o.default.createElement(Le, null, o.default.createElement("div", { style: { fontSize: 15, lineHeight: 1.5, marginBottom: 14 } }, e.noResult), o.default.createElement("div", { style: { display: "flex" } }, o.default.createElement("button", { onClick: () => cn("calc"), style: an(false) }, e.goCalc)))), C === "log" && React.createElement(FishingLog, { lang: l, presets: Wl, toast: as, current: y ? { floatG: f, floatName: fPick ? fPick.label : "", desc: [...Bh.map((g0) => `${g0.cnt}× ${g0.shot.code}`), ...(Rl ? [Rl.code] : [])].join(" + ") } : null })), o.default.createElement("nav", { style: { position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 60, background: h.bg, borderTop: `1px solid ${h.line}`, paddingBottom: "env(safe-area-inset-bottom, 0px)" } }, o.default.createElement("div", { style: { maxWidth: 560, margin: "0 auto", padding: "6px 10px 8px", display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 4 } }, Uh.map((s) => {
     let x = C === s.id;
     return o.default.createElement("button", { key: s.id, onClick: () => cn(s.id), "aria-current": x ? "page" : void 0, style: { minHeight: 62, borderRadius: 6, border: "none", borderTop: `3px solid ${x ? h.goldBrand : "transparent"}`, cursor: "pointer", background: x ? h.raised : "transparent", color: x ? h.navy : h.muted, fontFamily: Ot, fontSize: 12, fontWeight: x ? 800 : 600, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 2, padding: "4px 2px" } }, o.default.createElement("span", { style: { display: "flex", opacity: x ? 1 : 0.72, transform: x ? "scale(1.06)" : "none", transition: "transform .15s, opacity .15s" } }, s.icon), s.label);
   }))));
