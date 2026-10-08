@@ -201,6 +201,7 @@ Object.assign(Lm.el, {
   floatsEmpty: "Η λίστα είναι άδεια. Πρόσθεσε τον πρώτο σου φελλό.",
   realHint: "Πραγματικό = η φόρτωση που μέτρησες· αυτό μπαίνει στον στόχο. Αν μείνει κενό, μπαίνει το ονομαστικό.",
   sizesCount: (n) => n === 1 ? "1 νούμερο" : `${n} νούμερα`,
+  floatChoose: "Διάλεξε φελλό", proLocked: "Το πραγματικό βάρος φελλού είναι λειτουργία Pro.",
 });
 Object.assign(Lm.en, {
   floatsTitle: "Floats", floatLbl: "Float", floatNone: "— No float —",
@@ -212,6 +213,7 @@ Object.assign(Lm.en, {
   floatsEmpty: "The list is empty. Add your first float.",
   realHint: "Actual = the load you measured; it becomes the target. If left empty, the nominal is used.",
   sizesCount: (n) => n === 1 ? "1 size" : `${n} sizes`,
+  floatChoose: "Choose a float", proLocked: "Actual float weight is a Pro feature.",
 });
 Object.assign(Lm.it, {
   floatsTitle: "Galleggianti", floatLbl: "Galleggiante", floatNone: "— Nessun galleggiante —",
@@ -223,6 +225,7 @@ Object.assign(Lm.it, {
   floatsEmpty: "L'elenco è vuoto. Aggiungi il tuo primo galleggiante.",
   realHint: "Reale = la portata che hai misurato; diventa l'obiettivo. Se resta vuoto, si usa il nominale.",
   sizesCount: (n) => n === 1 ? "1 misura" : `${n} misure`,
+  floatChoose: "Scegli un galleggiante", proLocked: "Il peso reale del galleggiante è una funzione Pro.",
 });
 
 // Γλώσσες: σειρά στο μενού, σύντομος κωδικός στο κουμπί, όνομα στη λίστα.
@@ -358,9 +361,9 @@ var LOG_T = {
     dirs: { N: "Tramontana (N)", NE: "Grecale (NE)", E: "Levante (E)", SE: "Scirocco (SE)", S: "Ostro (S)", SW: "Libeccio (SW)", W: "Ponente (W)", NW: "Maestrale (NW)" },
   },
 };
-Object.assign(LOG_T.el, { floatModel: "Μοντέλο φελλού" });
-Object.assign(LOG_T.en, { floatModel: "Float model" });
-Object.assign(LOG_T.it, { floatModel: "Modello di galleggiante" });
+Object.assign(LOG_T.el, { floatModel: "Μοντέλο φελλού", freeCount: (n, m) => `Δωρεάν: ${n} από ${m} καταχωρίσεις`, freeMore: "Pro: απεριόριστες και με φωτογραφίες", limitTitle: (m) => `Έφτασες τις ${m} δωρεάν καταχωρίσεις`, limitText: "Οι καταχωρίσεις σου μένουν εδώ: τις ανοίγεις και τις διορθώνεις κανονικά. Για νέες χρειάζεται το Pro, με απεριόριστες καταχωρίσεις και έως 4 φωτογραφίες στην καθεμία.", proSoon: "Pro · σύντομα", photoPro: "Οι φωτογραφίες στο ημερολόγιο είναι λειτουργία Pro." });
+Object.assign(LOG_T.en, { floatModel: "Float model", freeCount: (n, m) => `Free: ${n} of ${m} entries`, freeMore: "Pro: unlimited, with photos", limitTitle: (m) => `You have reached the ${m} free entries`, limitText: "Your entries stay here: you can open and edit them as usual. New entries need Pro, with unlimited entries and up to 4 photos in each.", proSoon: "Pro · coming soon", photoPro: "Photos in the log are a Pro feature." });
+Object.assign(LOG_T.it, { floatModel: "Modello di galleggiante", freeCount: (n, m) => `Gratis: ${n} di ${m} voci`, freeMore: "Pro: illimitate, con foto", limitTitle: (m) => `Hai raggiunto le ${m} voci gratuite`, limitText: "Le tue voci restano qui: puoi aprirle e modificarle come sempre. Per nuove voci serve il Pro, con voci illimitate e fino a 4 foto ciascuna.", proSoon: "Pro · in arrivo", photoPro: "Le foto nel diario sono una funzione Pro." });
 var WIND_DIRS = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
 var todayISO = () => {
   var d = new Date();
@@ -445,6 +448,7 @@ function FishingLog({ lang, presets, current, toast }) {
   var [viewId, setViewId] = React.useState(null);
   var [busy, setBusy] = React.useState(false);
   var fileRef = React.useRef(null);
+  var logPro = hasPro();
   React.useEffect(() => { mu("log", entries); }, [entries]);
   var places = React.useMemo(() => [...new Set(entries.map((x) => x.place).filter(Boolean))], [entries]);
   var set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
@@ -482,6 +486,7 @@ function FishingLog({ lang, presets, current, toast }) {
     setForm(null);
   };
   var save = () => {
+    if (!logPro && !form.id && entries.length >= FREE_LOG_LIMIT) { toast && toast(L2.limitTitle(FREE_LOG_LIMIT), false); return; }
     var { _orig, ...rest } = form;
     var e = { ...rest, id: rest.id || Date.now() };
     photoDel((_orig || []).filter((x) => !(e.photos || []).includes(x)));
@@ -546,7 +551,9 @@ function FishingLog({ lang, presets, current, toast }) {
               </div>
             )}
             <input ref={fileRef} type="file" accept="image/*" multiple onChange={(ev) => addPhotos(ev.target.files)} style={{ display: "none" }} />
-            {(form.photos || []).length < MAX_PHOTOS ? (
+            {!logPro ? (
+              <button type="button" onClick={() => toast && toast(L2.photoPro, false)} style={{ ...ql, minHeight: 44, width: "100%", background: h.raised, color: h.faint, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>{L2.addPhoto.replace("📷", "🔒")}<ProTag small /></button>
+            ) : (form.photos || []).length < MAX_PHOTOS ? (
               <button type="button" disabled={busy} onClick={() => fileRef.current && fileRef.current.click()} style={{ ...ql, minHeight: 44, width: "100%", opacity: busy ? 0.6 : 1 }}>{busy ? L2.photoBusy : L2.addPhoto}</button>
             ) : (
               <div style={{ fontSize: 12, color: h.muted }}>{L2.photoMax(MAX_PHOTOS)}</div>
@@ -572,10 +579,26 @@ function FishingLog({ lang, presets, current, toast }) {
   return (
     <>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-        <div style={{ fontSize: 18, fontWeight: 800, color: h.navy, display: "flex", alignItems: "center" }}>{L2.title}{Badge}</div>
+        <div style={{ fontSize: 18, fontWeight: 800, color: h.navy, display: "flex", alignItems: "center" }}>{L2.title}</div>
         <span style={{ fontSize: 12, color: h.muted }}>{entries.length ? L2.entries(entries.length) : ""}</span>
       </div>
-      <button onClick={() => setForm({ ...emptyEntry(), _orig: [] })} style={{ ...an(false), width: "100%", marginBottom: 12 }}>{L2.add}</button>
+      {!logPro && entries.length >= FREE_LOG_LIMIT ? (
+        <Le style={{ borderColor: `${h.goldBrand}99`, boxShadow: `inset 0 3px 0 ${h.goldBrand}` }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, fontWeight: 800, fontSize: 16, color: h.navy, marginBottom: 6 }}><span aria-hidden="true">🔒</span><span>{L2.limitTitle(FREE_LOG_LIMIT)}<ProTag /></span></div>
+          <div style={{ fontSize: 13, color: h.muted, lineHeight: 1.5, marginBottom: 12 }}>{L2.limitText}</div>
+          <div style={{ display: "inline-block", background: h.navy, color: "#fff", border: `2px solid ${h.goldBrand}`, borderRadius: 6, padding: "8px 14px", fontWeight: 800, fontSize: 13 }}>{L2.proSoon}</div>
+        </Le>
+      ) : (
+        <>
+          <button onClick={() => setForm({ ...emptyEntry(), _orig: [] })} style={{ ...an(false), width: "100%", marginBottom: logPro ? 12 : 6 }}>{L2.add}</button>
+          {!logPro && (
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, flexWrap: "wrap", fontSize: 12, color: h.muted, marginBottom: 12 }}>
+              <b style={{ color: h.navy }}>{L2.freeCount(entries.length, FREE_LOG_LIMIT)}</b>
+              <span>{L2.freeMore}<ProTag small /></span>
+            </div>
+          )}
+        </>
+      )}
       {entries.length === 0 && <Le><div style={{ fontSize: 14, lineHeight: 1.5, color: h.muted }}>{L2.empty}</div></Le>}
       {entries.map((x) => {
         var isOpen = openId === x.id;
@@ -924,7 +947,7 @@ var Th = "bolorigpro.v1.", gu = (l, t) => {
 // ως κείμενο, για να γράφονται άνετα (π.χ. "2." ή "2,1"). Πραγματικό = η φόρτωση
 // που μέτρησε ο χρήστης· αν είναι κενό, φόρτωση = ονομαστικό.
 var fNum = (v) => { var x = parseFloat(String(v == null ? "" : v).replace(",", ".")); return isNaN(x) || x <= 0 ? null : x; };
-var fLoad = (sz) => fNum(sz.real) != null ? fNum(sz.real) : fNum(sz.nom);
+var fLoad = (sz) => hasPro() && fNum(sz.real) != null ? fNum(sz.real) : fNum(sz.nom);
 var fShow = (x) => { if (x == null) return ""; var s = String(Math.round(x * 1000) / 1000); return s.includes(".") ? s : x.toFixed(1); };
 var fDiff = (sz) => fNum(sz.real) != null && fNum(sz.nom) != null && Math.abs(fNum(sz.real) - fNum(sz.nom)) > 1e-9;
 var fSortModels = (list, lang) => [...list].sort((a, b) => a.name.localeCompare(b.name, lang, { sensitivity: "base", numeric: true }));
@@ -943,8 +966,21 @@ var FloatIcon = (
   </svg>
 );
 
-// Επιλογή φελλού στον Υπολογισμό: λίστα ανά μοντέλο (αλφαβητικά), νούμερα από μικρό σε μεγάλο.
+// Pro: το πραγματικό βάρος φελλού. Κατά την κλειστή δοκιμή όλα τα Pro μένουν ανοιχτά·
+// όταν μπει η αγορά, PRO_OPEN = false και το hasPro() διαβάζει την αγορά.
+var PRO_OPEN = true;
+// Προβολή για βίντεο/screenshots: bolorig.vercel.app/?demo=free δείχνει τη δωρεάν
+// έκδοση με τα Pro κλειδωμένα, χωρίς να αλλάζει τίποτα για τους υπόλοιπους.
+var DEMO_FREE = (() => { try { return new URLSearchParams(window.location.search).get("demo") === "free"; } catch (e) { return false; } })();
+var hasPro = () => !DEMO_FREE && (PRO_OPEN || gu("pro", false) === true);
+var FREE_LOG_LIMIT = 10; // δωρεάν: έως 10 καταχωρίσεις ημερολογίου, χωρίς φωτογραφίες
+var ProTag = ({ small }) => <span style={{ fontFamily: "'Barlow Condensed', 'Arial Narrow', sans-serif", fontWeight: 800, fontStyle: "italic", fontSize: small ? 10.5 : 12, lineHeight: 1, color: h.navy, background: h.goldBrand, padding: "1px 5px 2px 4px", borderRadius: 3, marginLeft: 6, verticalAlign: "1px" }}>PRO</span>;
+
+// Επιλογή φελλού στον Υπολογισμό: κουμπί που ανοίγει δικό μας παράθυρο από κάτω,
+// με τους φελλούς αλφαβητικά και τα νούμερα σαν κουμπάκια.
 function FloatPick({ floats, value, onPick, onGo, t, lang }) {
+  var [open, setOpen] = React.useState(false);
+  var pro = hasPro();
   var models = fSortModels(floats.filter((m) => (m.sizes || []).some((sz) => fNum(sz.nom) != null)), lang);
   var picked = null;
   if (value) {
@@ -953,6 +989,16 @@ function FloatPick({ floats, value, onPick, onGo, t, lang }) {
     var ps = pm && (pm.sizes || []).find((sz) => sz.id === si);
     if (pm && ps) picked = { m: pm, s: ps };
   }
+  React.useEffect(() => {
+    if (!open) return;
+    var prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    var onKey = (ev) => ev.key === "Escape" && setOpen(false);
+    window.addEventListener("keydown", onKey);
+    return () => { document.body.style.overflow = prev; window.removeEventListener("keydown", onKey); };
+  }, [open]);
+  var choose = (v) => { onPick(v); setOpen(false); };
+  var showReal = (sz) => pro && fDiff(sz);
   return (
     <div role="group" aria-label={t.floatLbl} style={{ marginBottom: 12 }}>
       <div style={{ fontSize: 12, color: h.muted, fontWeight: 500, marginBottom: 6 }}>{t.floatLbl}</div>
@@ -962,44 +1008,73 @@ function FloatPick({ floats, value, onPick, onGo, t, lang }) {
           <button onClick={onGo} style={{ ...ql, flexShrink: 0 }}>{t.floatGo}</button>
         </div>
       ) : (
-        <>
-          <select value={picked ? value : ""} onChange={(ev) => onPick(ev.target.value)} aria-label={t.floatLbl} style={Nl({ fontSize: 15 })}>
-            <option value="">{t.floatNone}</option>
-            {models.map((m) => (
-              <optgroup key={m.id} label={m.name}>
-                {fSortSizes(m.sizes).filter((sz) => fNum(sz.nom) != null).map((sz) => (
-                  <option key={sz.id} value={`${m.id}|${sz.id}`}>
-                    {fLabel(m, sz)}{fDiff(sz) ? `  →  ${fShow(fNum(sz.real))} ${t.grUnit}` : ` ${t.grUnit}`}
-                  </option>
-                ))}
-              </optgroup>
-            ))}
-          </select>
-          {picked && fDiff(picked.s) && (
-            <div style={{ fontSize: 12, color: h.muted, marginTop: 5 }}>
-              {t.nominalLbl.replace(/\s*\(.*\)/, "")} {fShow(fNum(picked.s.nom))} · <b style={{ color: h.navy }}>{t.realLbl.replace(/\s*\(.*\)/, "")} {fShow(fNum(picked.s.real))} {t.grUnit}</b>
+        <button onClick={() => setOpen(true)} aria-haspopup="dialog" aria-label={t.floatLbl} style={{ ...Nl({ fontSize: 15 }), display: "flex", alignItems: "center", gap: 10, cursor: "pointer", textAlign: "left", minHeight: 44 }}>
+          <span style={{ display: "flex", flexShrink: 0 }} aria-hidden="true">{React.cloneElement(FloatIcon, { width: 26, height: 26 })}</span>
+          <span style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: picked ? h.text : h.muted, fontWeight: picked ? 700 : 500 }}>
+            {picked ? fLabel(picked.m, picked.s) : t.floatChoose}
+          </span>
+          {picked && <span style={{ fontFamily: xt, fontWeight: 700, fontSize: 16, color: h.navy, whiteSpace: "nowrap" }}>{fShow(fLoad(picked.s))} <span style={{ fontSize: 12, color: h.muted }}>{t.grUnit}</span></span>}
+          <span aria-hidden="true" style={{ color: h.muted, fontSize: 16 }}>▾</span>
+        </button>
+      )}
+      {picked && showReal(picked.s) && (
+        <div style={{ fontSize: 12, color: h.muted, marginTop: 5 }}>
+          {t.nominalLbl.replace(/\s*\(.*\)/, "")} {fShow(fNum(picked.s.nom))} · <b style={{ color: h.navy }}>{t.realLbl.replace(/\s*\(.*\)/, "")} {fShow(fNum(picked.s.real))} {t.grUnit}</b><ProTag small />
+        </div>
+      )}
+      {open && (
+        <div onClick={() => setOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 200, background: "rgba(21,39,71,0.45)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
+          <div role="dialog" aria-modal="true" aria-label={t.floatLbl} onClick={(ev) => ev.stopPropagation()} style={{ width: "100%", maxWidth: 560, maxHeight: "78vh", display: "flex", flexDirection: "column", background: h.sand, borderRadius: "14px 14px 0 0", borderTop: `3px solid ${h.goldBrand}`, boxShadow: "0 -8px 30px rgba(21,39,71,0.25)", paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
+            <div style={{ display: "flex", justifyContent: "center", padding: "8px 0 2px" }}><span style={{ width: 40, height: 4, borderRadius: 2, background: h.line2 }} /></div>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "6px 16px 10px" }}>
+              <span style={{ display: "flex" }} aria-hidden="true">{React.cloneElement(FloatIcon, { width: 28, height: 28 })}</span>
+              <span style={{ flex: 1, fontFamily: xt, fontWeight: 800, fontSize: 22, color: h.navy }}>{t.floatLbl}</span>
+              <button onClick={() => setOpen(false)} aria-label={t.cancel} style={{ ...ql, width: 36, minHeight: 36, padding: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>{React.createElement(nn, { d: un.x, size: 18 })}</button>
             </div>
-          )}
-        </>
+            <div style={{ overflowY: "auto", padding: "0 16px 16px", WebkitOverflowScrolling: "touch" }}>
+              <button onClick={() => choose("")} style={{ width: "100%", minHeight: 42, marginBottom: 12, borderRadius: 6, cursor: "pointer", fontFamily: Ot, fontSize: 14, fontWeight: 700, background: !picked ? h.navy : h.surface, color: !picked ? "#fff" : h.muted, border: !picked ? `2px solid ${h.goldBrand}` : `1px solid ${h.line2}` }}>{t.floatNone}</button>
+              {models.map((m) => (
+                <div key={m.id} style={{ background: h.surface, border: `1px solid ${h.line}`, borderRadius: 8, padding: "10px 12px 12px", marginBottom: 10 }}>
+                  <div style={{ fontWeight: 800, fontSize: 16, color: h.text, marginBottom: 8 }}>{m.name}</div>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(76px, 1fr))", gap: 8 }}>
+                    {fSortSizes(m.sizes).filter((sz) => fNum(sz.nom) != null).map((sz) => {
+                      var on = picked && picked.m.id === m.id && picked.s.id === sz.id;
+                      return (
+                        <button key={sz.id} onClick={() => choose(`${m.id}|${sz.id}`)} aria-pressed={on} aria-label={`${fLabel(m, sz)} ${t.grUnit}`} style={{ minHeight: 52, borderRadius: 6, cursor: "pointer", padding: "6px 4px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 1, fontFamily: xt, background: on ? h.navy : h.deep, color: on ? "#fff" : h.text, border: on ? `2px solid ${h.goldBrand}` : `1px solid ${h.line2}` }}>
+                          <span style={{ fontWeight: 800, fontSize: 20, lineHeight: 1 }}>{fShow(fNum(sz.nom))}</span>
+                          <span style={{ fontSize: 11.5, fontWeight: 700, lineHeight: 1.1, color: on ? h.goldBrand : showReal(sz) ? h.navy : h.muted }}>
+                            {showReal(sz) ? `● ${fShow(fNum(sz.real))} ${t.grUnit}` : !pro && fDiff(sz) ? "🔒 PRO" : t.grUnit}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
 }
 
 // Ένας φελλός στην Αποθήκη: πατάς το όνομα και ανοίγουν τα νούμερά του.
-function FloatModel({ m, open, onToggle, onChange, onDelete, t }) {
+function FloatModel({ m, open, onToggle, onChange, onDelete, t, toast }) {
+  var pro = hasPro();
+  var locked = () => toast && toast(t.proLocked, false);
   var [name, setName] = React.useState(m.name);
   var [nom, setNom] = React.useState("");
   var [real, setReal] = React.useState("");
   React.useEffect(() => { setName(m.name); }, [m.name]);
   var sizes = m.sizes || [];
-  var diffs = sizes.some(fDiff);
+  var diffs = pro && sizes.some(fDiff);
   var setSize = (id, k, v) => onChange({ ...m, sizes: sizes.map((sz) => sz.id === id ? { ...sz, [k]: v } : sz) });
   var tidy = () => onChange({ ...m, sizes: fSortSizes(sizes) });
   var delSize = (id) => onChange({ ...m, sizes: sizes.filter((sz) => sz.id !== id) });
   var addSize = () => {
     if (fNum(nom) == null) return;
-    onChange({ ...m, sizes: fSortSizes([...sizes, { id: fId("s"), nom: nom.trim(), real: fNum(real) != null ? real.trim() : "" }]) });
+    onChange({ ...m, sizes: fSortSizes([...sizes, { id: fId("s"), nom: nom.trim(), real: pro && fNum(real) != null ? real.trim() : "" }]) });
     setNom(""); setReal("");
   };
   var commitName = () => { var v = name.trim(); v && v !== m.name ? onChange({ ...m, name: v }) : setName(m.name); };
@@ -1021,21 +1096,25 @@ function FloatModel({ m, open, onToggle, onChange, onDelete, t }) {
           </label>
           <div style={{ display: "grid", gridTemplateColumns: cols, gap: 6, alignItems: "end", marginBottom: 4 }}>
             <div style={{ fontSize: 12, color: h.muted, fontWeight: 500 }}>{t.nominalLbl}</div>
-            <div style={{ fontSize: 12, color: h.muted, fontWeight: 500 }}>{t.realLbl}</div>
+            <div style={{ fontSize: 12, color: h.muted, fontWeight: 500, whiteSpace: "nowrap" }}>{t.realLbl}<ProTag small /></div>
           </div>
           {sizes.length === 0 && <div style={{ fontSize: 13, color: h.muted, margin: "4px 0 8px" }}>{t.noSizes}</div>}
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
             {sizes.map((sz) => (
               <div key={sz.id} style={{ display: "grid", gridTemplateColumns: cols, gap: 6, alignItems: "center" }}>
                 <input type="number" inputMode="decimal" step="0.05" min="0" value={sz.nom} aria-label={t.nominalLbl} onChange={(ev) => setSize(sz.id, "nom", ev.target.value)} onBlur={tidy} onFocus={(ev) => ev.target.select()} style={cell} />
-                <input type="number" inputMode="decimal" step="0.05" min="0" value={sz.real} placeholder={fShow(fNum(sz.nom))} aria-label={t.realLbl} onChange={(ev) => setSize(sz.id, "real", ev.target.value)} onFocus={(ev) => ev.target.select()} style={{ ...cell, color: fDiff(sz) ? h.navy : h.text }} />
-                <span aria-hidden="true" style={{ color: h.goldBrand, fontSize: 12, textAlign: "center" }}>{fDiff(sz) ? "●" : ""}</span>
+                {pro ? (
+                  <input type="number" inputMode="decimal" step="0.05" min="0" value={sz.real} placeholder={fShow(fNum(sz.nom))} aria-label={t.realLbl} onChange={(ev) => setSize(sz.id, "real", ev.target.value)} onFocus={(ev) => ev.target.select()} style={{ ...cell, color: fDiff(sz) ? h.navy : h.text }} />
+                ) : (
+                  <button onClick={locked} aria-label={`${t.realLbl} PRO`} style={{ ...cell, background: h.raised, color: h.faint, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>🔒</button>
+                )}
+                <span aria-hidden="true" style={{ color: h.goldBrand, fontSize: 12, textAlign: "center" }}>{pro && fDiff(sz) ? "●" : ""}</span>
                 <button onClick={() => delSize(sz.id)} style={Ic} aria-label={`${t.del} ${fShow(fNum(sz.nom))}`}>{React.createElement(nn, { d: un.x, size: 16 })}</button>
               </div>
             ))}
             <div style={{ display: "grid", gridTemplateColumns: cols, gap: 6, alignItems: "center", marginTop: 4, paddingTop: 8, borderTop: `1px dashed ${h.line2}` }}>
               <input type="number" inputMode="decimal" step="0.05" min="0" value={nom} placeholder="2.0" aria-label={t.nominalLbl} onChange={(ev) => setNom(ev.target.value)} onKeyDown={(ev) => ev.key === "Enter" && addSize()} style={cell} />
-              <input type="number" inputMode="decimal" step="0.05" min="0" value={real} placeholder={nom || "—"} aria-label={t.realLbl} onChange={(ev) => setReal(ev.target.value)} onKeyDown={(ev) => ev.key === "Enter" && addSize()} style={cell} />
+              {pro ? <input type="number" inputMode="decimal" step="0.05" min="0" value={real} placeholder={nom || "—"} aria-label={t.realLbl} onChange={(ev) => setReal(ev.target.value)} onKeyDown={(ev) => ev.key === "Enter" && addSize()} style={cell} /> : <button onClick={locked} aria-label={`${t.realLbl} PRO`} style={{ ...cell, background: h.raised, color: h.faint, cursor: "pointer" }}>🔒</button>}
               <span />
               <span />
             </div>
@@ -1050,7 +1129,7 @@ function FloatModel({ m, open, onToggle, onChange, onDelete, t }) {
   );
 }
 
-function FloatList({ floats, setFloats, t, lang }) {
+function FloatList({ floats, setFloats, t, lang, toast }) {
   var [adding, setAdding] = React.useState(false);
   var [newName, setNewName] = React.useState("");
   var [err, setErr] = React.useState("");
@@ -1087,12 +1166,13 @@ function FloatList({ floats, setFloats, t, lang }) {
       {floats.length === 0 && !adding && <div style={{ fontSize: 14, color: h.muted, lineHeight: 1.5 }}>{t.floatsEmpty}</div>}
       <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
         {fSortModels(floats, lang).map((m) => (
-          <FloatModel key={m.id} m={m} t={t} open={openId === m.id} onToggle={() => setOpenId((v) => v === m.id ? null : m.id)} onChange={update} onDelete={() => remove(m)} />
+          <FloatModel key={m.id} m={m} t={t} open={openId === m.id} onToggle={() => setOpenId((v) => v === m.id ? null : m.id)} onChange={update} onDelete={() => remove(m)} toast={toast} />
         ))}
       </div>
     </div>
   );
 }
+
 
 function Pc() {
   var ps, vs;
@@ -1269,7 +1349,7 @@ function Pc() {
     i(""), c(""), z(null);
   }, style: { ...ql, minHeight: 44, width: 44, padding: 0, fontSize: 16 } }, "↺"), o.default.createElement("button", { onClick: fn, disabled: fs, style: an(fs) }, e.btnCalc)), o.default.createElement("div", { style: { display: "flex", justifyContent: "flex-end", marginTop: 10 } }, o.default.createElement("button", { onClick: () => {
     i("8"), c("2.00"), b("fixed"), p("asc"), z(null), setFSel("");
-  }, style: ql }, e.btnReset))), React.createElement(ManualPicker, { shots: a, torpedo: Rl, target: $l, direction: S, t: e, onApply: (r0) => { z(r0); as(e.manualApplied); } }), y && o.default.createElement(o.default.Fragment, null, o.default.createElement(Le, { style: { borderColor: y.success ? `${h.ok}88` : `${h.bad}88` } }, o.default.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 12, gap: 10 } }, o.default.createElement("div", null, o.default.createElement(el, { mb: 2 }, e.resultLabel), o.default.createElement("div", { style: { fontFamily: xt, fontSize: 32, fontWeight: 800, lineHeight: 1, color: y.success ? h.ok : h.bad } }, y.total.toFixed(3), o.default.createElement("span", { style: { fontSize: 18, marginLeft: 4 } }, e.grUnit))), o.default.createElement("div", { style: { textAlign: "right" } }, o.default.createElement(el, { mb: 2 }, e.targetLabel), o.default.createElement("div", { style: { fontFamily: xt, fontSize: 22, fontWeight: 700 } }, $l.toFixed(3), " ", e.grUnit), o.default.createElement("div", { style: { fontSize: 13, fontWeight: 700, color: y.success ? h.ok : h.bad } }, y.success ? e.inRange : e.outRange))), o.default.createElement("div", { style: { height: 8, background: h.line, borderRadius: 4, marginBottom: 16, overflow: "hidden" } }, o.default.createElement("div", { style: { height: "100%", width: `${Math.min(100, y.total / $l * 100)}%`, background: y.success ? h.ok : h.bad, borderRadius: 4, transition: "width 0.5s" } })), g !== "fixed" && y.exact === false && o.default.createElement("div", { style: { fontSize: 13, lineHeight: 1.5, color: h.text, background: `${h.shot}1F`, border: `1px solid ${h.shot}66`, borderRadius: 5, padding: "10px 12px", marginBottom: 14 } }, e.relaxedNote(on, g, y.sizesUsed)), o.default.createElement(el, null, e.composition), o.default.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 6 } }, y.items && y.items.filter((s) => s.isTorpedo).map((s, x) => o.default.createElement("div", { key: `t${x}`, style: { display: "flex", alignItems: "center", justifyContent: "space-between", background: h.deep, borderRadius: 5, padding: "10px 14px", boxShadow: `inset 3px 0 0 ${h.torp}` } }, o.default.createElement("div", null, o.default.createElement("div", { style: { fontWeight: 800, fontSize: 15, color: h.torp } }, s.code), o.default.createElement("div", { style: { fontSize: 12, color: h.muted, marginTop: 2 } }, e.torpedo)), o.default.createElement("div", { style: { fontFamily: xt, fontSize: 20, fontWeight: 700 } }, s.grams.toFixed(2), " ", e.grUnit))), Bh.map(({ shot: s, cnt: x }, A) => o.default.createElement("div", { key: A, style: { display: "flex", alignItems: "center", justifyContent: "space-between", background: h.deep, borderRadius: 5, padding: "10px 14px" } }, o.default.createElement("div", null, o.default.createElement("div", { style: { fontWeight: 800, fontSize: 15 } }, x, " × ", s.code), o.default.createElement("div", { style: { fontSize: 12, color: h.muted, marginTop: 2 } }, s.grams.toFixed(3), " ", e.perPiece)), o.default.createElement("div", { style: { fontFamily: xt, fontSize: 20, fontWeight: 700 } }, (s.grams * x).toFixed(3), " ", e.grUnit)))), o.default.createElement("div", { style: { display: "flex", marginTop: 14 } }, o.default.createElement("button", { onClick: () => cn("spacing"), style: an(false) }, e.nextSpacing))), o.default.createElement("button", { onClick: () => z(null), style: { ...ql, width: "100%", minHeight: 44, fontSize: 14, marginBottom: 14 } }, e.btnReset2)), o.default.createElement(el, { mb: 8 }, e.inventory), [["shots", e.shotsTitle, a.length, hu.shots], ["torpedoes", e.torpedoTitle, il.length, hu.torp], ["floats", e.floatsTitle, flt.length, FloatIcon]].map(([s, x, A, B]) => o.default.createElement(Le, { key: s, style: { padding: 0, overflow: "hidden" } }, o.default.createElement("button", { id: "inv-" + s, onClick: () => X((w) => w === s ? null : s), "aria-expanded": N === s, style: { width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", background: "transparent", border: "none", cursor: "pointer", fontFamily: Ot, color: h.text, textAlign: "left" } }, B, o.default.createElement("span", { style: { flex: 1, fontSize: 15, fontWeight: 700 } }, x, " ", o.default.createElement("span", { style: { color: h.muted, fontWeight: 500 } }, "(", A, ")")), o.default.createElement("span", { "aria-hidden": "true", style: { color: h.muted, fontSize: 16, transform: N === s ? "rotate(180deg)" : "none", transition: "transform .15s" } }, "▾")), N === s && o.default.createElement("div", { style: { padding: "0 14px 14px", borderTop: `1px solid ${h.line}` } }, o.default.createElement("div", { style: { height: 12 } }), s === "floats" ? React.createElement(FloatList, { floats: flt, setFloats: setFlt, t: e, lang: l }) : s === "shots" ? o.default.createElement(mh, { noCard: true, title: e.shotsTitle, items: a, sortFn: (w, Y) => Y.grams - w.grams, decimals: 3, onReset: () => n(sh), onRemove: Ah, onAdd: Eh, codePh: "No 5", gramsPh: "0.000", step: "0.001", t: e, marker: o.default.createElement("span", { style: { width: 14, height: 14, borderRadius: "50%", background: h.shot, flexShrink: 0 } }) }) : o.default.createElement(mh, { noCard: true, title: e.torpedoTitle, items: il, sortFn: (w, Y) => w.grams - Y.grams, decimals: 2, onReset: () => Dt(dh), onRemove: Ch, onAdd: Mh, codePh: "TOJ0xxx", gramsPh: "0.00", step: "0.01", t: e, marker: o.default.createElement("span", { style: { width: 9, height: 17, borderRadius: "50%", background: h.torp, flexShrink: 0 } }) }))))), C === "spacing" && o.default.createElement(o.default.Fragment, null, o.default.createElement(Le, null, o.default.createElement("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 14 } }, o.default.createElement("label", null, o.default.createElement(el, null, e.leaderLbl), o.default.createElement("input", { type: "number", min: 0, step: 1, value: O, placeholder: "0", onChange: (s) => _(s.target.value), onFocus: (s) => s.target.select(), style: Nl() })), o.default.createElement("div", null, o.default.createElement(el, null, e.rigLenLbl), o.default.createElement("div", { style: { ...Nl(), display: "flex", alignItems: "center", background: h.raised, color: h.navy } }, y ? `${Il((ps = st.rigTop) != null ? ps : 0)} cm` : "—"))), y ? o.default.createElement(o.default.Fragment, null, o.default.createElement("div", { style: { fontSize: 13, lineHeight: 1.5, padding: "8px 10px", borderRadius: 5, marginBottom: 12, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", background: F ? ue === zl ? `${h.ok}14` : `${h.shot}14` : h.deep, border: `1px solid ${F ? ue === zl ? `${h.ok}66` : `${h.shot}66` : h.line}`, color: F && ue === zl ? h.ok : h.text, fontWeight: F && ue === zl ? 700 : 400 } }, o.default.createElement("span", { style: { flex: 1, minWidth: 180 } }, ue === 0 ? e.startHint : e.manualMode(ue, zl)), Array.isArray(F) && F.length > 0 && o.default.createElement("button", { onClick: () => {
+  }, style: ql }, e.btnReset))), React.createElement(ManualPicker, { shots: a, torpedo: Rl, target: $l, direction: S, t: e, onApply: (r0) => { z(r0); as(e.manualApplied); } }), y && o.default.createElement(o.default.Fragment, null, o.default.createElement(Le, { style: { borderColor: y.success ? `${h.ok}88` : `${h.bad}88` } }, o.default.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 12, gap: 10 } }, o.default.createElement("div", null, o.default.createElement(el, { mb: 2 }, e.resultLabel), o.default.createElement("div", { style: { fontFamily: xt, fontSize: 32, fontWeight: 800, lineHeight: 1, color: y.success ? h.ok : h.bad } }, y.total.toFixed(3), o.default.createElement("span", { style: { fontSize: 18, marginLeft: 4 } }, e.grUnit))), o.default.createElement("div", { style: { textAlign: "right" } }, o.default.createElement(el, { mb: 2 }, e.targetLabel), o.default.createElement("div", { style: { fontFamily: xt, fontSize: 22, fontWeight: 700 } }, $l.toFixed(3), " ", e.grUnit), o.default.createElement("div", { style: { fontSize: 13, fontWeight: 700, color: y.success ? h.ok : h.bad } }, y.success ? e.inRange : e.outRange))), o.default.createElement("div", { style: { height: 8, background: h.line, borderRadius: 4, marginBottom: 16, overflow: "hidden" } }, o.default.createElement("div", { style: { height: "100%", width: `${Math.min(100, y.total / $l * 100)}%`, background: y.success ? h.ok : h.bad, borderRadius: 4, transition: "width 0.5s" } })), g !== "fixed" && y.exact === false && o.default.createElement("div", { style: { fontSize: 13, lineHeight: 1.5, color: h.text, background: `${h.shot}1F`, border: `1px solid ${h.shot}66`, borderRadius: 5, padding: "10px 12px", marginBottom: 14 } }, e.relaxedNote(on, g, y.sizesUsed)), o.default.createElement(el, null, e.composition), o.default.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 6 } }, y.items && y.items.filter((s) => s.isTorpedo).map((s, x) => o.default.createElement("div", { key: `t${x}`, style: { display: "flex", alignItems: "center", justifyContent: "space-between", background: h.deep, borderRadius: 5, padding: "10px 14px", boxShadow: `inset 3px 0 0 ${h.torp}` } }, o.default.createElement("div", null, o.default.createElement("div", { style: { fontWeight: 800, fontSize: 15, color: h.torp } }, s.code), o.default.createElement("div", { style: { fontSize: 12, color: h.muted, marginTop: 2 } }, e.torpedo)), o.default.createElement("div", { style: { fontFamily: xt, fontSize: 20, fontWeight: 700 } }, s.grams.toFixed(2), " ", e.grUnit))), Bh.map(({ shot: s, cnt: x }, A) => o.default.createElement("div", { key: A, style: { display: "flex", alignItems: "center", justifyContent: "space-between", background: h.deep, borderRadius: 5, padding: "10px 14px" } }, o.default.createElement("div", null, o.default.createElement("div", { style: { fontWeight: 800, fontSize: 15 } }, x, " × ", s.code), o.default.createElement("div", { style: { fontSize: 12, color: h.muted, marginTop: 2 } }, s.grams.toFixed(3), " ", e.perPiece)), o.default.createElement("div", { style: { fontFamily: xt, fontSize: 20, fontWeight: 700 } }, (s.grams * x).toFixed(3), " ", e.grUnit)))), o.default.createElement("div", { style: { display: "flex", marginTop: 14 } }, o.default.createElement("button", { onClick: () => cn("spacing"), style: an(false) }, e.nextSpacing))), o.default.createElement("button", { onClick: () => z(null), style: { ...ql, width: "100%", minHeight: 44, fontSize: 14, marginBottom: 14 } }, e.btnReset2)), o.default.createElement(el, { mb: 8 }, e.inventory), [["shots", e.shotsTitle, a.length, hu.shots], ["torpedoes", e.torpedoTitle, il.length, hu.torp], ["floats", e.floatsTitle, flt.length, FloatIcon]].map(([s, x, A, B]) => o.default.createElement(Le, { key: s, style: { padding: 0, overflow: "hidden" } }, o.default.createElement("button", { id: "inv-" + s, onClick: () => X((w) => w === s ? null : s), "aria-expanded": N === s, style: { width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", background: "transparent", border: "none", cursor: "pointer", fontFamily: Ot, color: h.text, textAlign: "left" } }, B, o.default.createElement("span", { style: { flex: 1, fontSize: 15, fontWeight: 700 } }, x, " ", o.default.createElement("span", { style: { color: h.muted, fontWeight: 500 } }, "(", A, ")")), o.default.createElement("span", { "aria-hidden": "true", style: { color: h.muted, fontSize: 16, transform: N === s ? "rotate(180deg)" : "none", transition: "transform .15s" } }, "▾")), N === s && o.default.createElement("div", { style: { padding: "0 14px 14px", borderTop: `1px solid ${h.line}` } }, o.default.createElement("div", { style: { height: 12 } }), s === "floats" ? React.createElement(FloatList, { floats: flt, setFloats: setFlt, t: e, lang: l, toast: as }) : s === "shots" ? o.default.createElement(mh, { noCard: true, title: e.shotsTitle, items: a, sortFn: (w, Y) => Y.grams - w.grams, decimals: 3, onReset: () => n(sh), onRemove: Ah, onAdd: Eh, codePh: "No 5", gramsPh: "0.000", step: "0.001", t: e, marker: o.default.createElement("span", { style: { width: 14, height: 14, borderRadius: "50%", background: h.shot, flexShrink: 0 } }) }) : o.default.createElement(mh, { noCard: true, title: e.torpedoTitle, items: il, sortFn: (w, Y) => w.grams - Y.grams, decimals: 2, onReset: () => Dt(dh), onRemove: Ch, onAdd: Mh, codePh: "TOJ0xxx", gramsPh: "0.00", step: "0.01", t: e, marker: o.default.createElement("span", { style: { width: 9, height: 17, borderRadius: "50%", background: h.torp, flexShrink: 0 } }) }))))), C === "spacing" && o.default.createElement(o.default.Fragment, null, o.default.createElement(Le, null, o.default.createElement("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 14 } }, o.default.createElement("label", null, o.default.createElement(el, null, e.leaderLbl), o.default.createElement("input", { type: "number", min: 0, step: 1, value: O, placeholder: "0", onChange: (s) => _(s.target.value), onFocus: (s) => s.target.select(), style: Nl() })), o.default.createElement("div", null, o.default.createElement(el, null, e.rigLenLbl), o.default.createElement("div", { style: { ...Nl(), display: "flex", alignItems: "center", background: h.raised, color: h.navy } }, y ? `${Il((ps = st.rigTop) != null ? ps : 0)} cm` : "—"))), y ? o.default.createElement(o.default.Fragment, null, o.default.createElement("div", { style: { fontSize: 13, lineHeight: 1.5, padding: "8px 10px", borderRadius: 5, marginBottom: 12, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", background: F ? ue === zl ? `${h.ok}14` : `${h.shot}14` : h.deep, border: `1px solid ${F ? ue === zl ? `${h.ok}66` : `${h.shot}66` : h.line}`, color: F && ue === zl ? h.ok : h.text, fontWeight: F && ue === zl ? 700 : 400 } }, o.default.createElement("span", { style: { flex: 1, minWidth: 180 } }, ue === 0 ? e.startHint : e.manualMode(ue, zl)), Array.isArray(F) && F.length > 0 && o.default.createElement("button", { onClick: () => {
     kl([]), zt([]);
   }, style: { ...ql, minHeight: 32 } }, e.clearAll)), o.default.createElement("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 8 } }, o.default.createElement(el, { mb: 0 }, e.trayTitle)), o.default.createElement("div", { style: { display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 } }, [...ia, ...oa ? [oa] : []].map((s) => {
     let x = fo(s.key), A = jl.includes(s.key), B = s.key === "torp", w = B ? h.torp : x && x.rowType === "bulk" ? h.bulk : h.shot;
