@@ -1,8 +1,11 @@
 [{
-      "relation": ["delegate_permission/common.handle_all_urls"],
-      "target": {
-        "namespace": "android_app",
-        "package_name": "com.bolorigpro.app",
-        "sha256_cert_fingerprints": ["71:A4:66:AA:6B:94:F2:E6:46:BD:13:4B:BC:1A:B0:CD:CF:8A:07:A7:24:7D:D6:8B:44:5D:72:6A:51:89:A3:8E"]
-      }
-    }]
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.bolorigpro.app",
+    "sha256_cert_fingerprints": [
+      "E7:8A:63:3C:B8:1B:7D:70:4C:A7:2F:2A:F2:B2:B3:49:55:83:24:70:53:C8:74:23:5A:B4:B0:B2:E7:7A:C8:C4",
+      "71:A4:66:AA:6B:94:F2:E6:46:BD:13:4B:BC:1A:B0:CD:CF:8A:07:A7:24:7D:D6:8B:44:5D:72:6A:51:89:A3:8E"
+    ]
+  }
+}]
